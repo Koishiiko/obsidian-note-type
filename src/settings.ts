@@ -7,8 +7,8 @@ export interface NoteTypePluginSettings {
 }
 
 export const DEFAULT_SETTINGS: NoteTypePluginSettings = {
-	propertyIcon: "",
-	keys: [],
+	propertyIcon: "lucide-book",
+	keys: ["noteType"],
 };
 
 export class SampleSettingTab extends PluginSettingTab {
