@@ -25,6 +25,7 @@
 		"typescript-eslint": "8.59.2"
 	},
 	"dependencies": {
+		"monkey-around": "^3.0.0",
 		"obsidian": "1.12.3"
 	}
 }

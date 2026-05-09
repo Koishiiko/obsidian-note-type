@@ -6,6 +6,6 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
-.note-type-selector {
-	border-radius: 4px;
+.note-type-selector-container {
+	margin-bottom: 4px;
 }

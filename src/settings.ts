@@ -1,6 +1,6 @@
 import { App, ButtonComponent, PluginSettingTab, SettingGroup } from "obsidian";
 import NoteTypePlugin from "./main";
-import { NoteTypeModal } from "./components/NoteTypeModal";
+import { NoteTypeModal } from "./components/noteTypeModal";
 
 export interface NoteTypePluginSettings {
 	propertyIcon: string;

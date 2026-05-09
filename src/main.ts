@@ -1,13 +1,10 @@
-import { Plugin } from "obsidian";
+import { MarkdownView, Plugin, TFile } from "obsidian";
 import {
 	DEFAULT_SETTINGS,
 	NoteTypePluginSettings,
 	NoteTypeSettingTab,
 } from "./settings";
-import {
-	NOTE_TYPE_WIDGET_TYPE,
-	NoteTypeWidget,
-} from "./components/noteTypeWidget";
+import { patchMetadataEditor } from "./patchMetadataEditor";
 
 export default class NoteTypePlugin extends Plugin {
 	settings!: NoteTypePluginSettings;
@@ -17,32 +14,29 @@ export default class NoteTypePlugin extends Plugin {
 
 		this.addSettingTab(new NoteTypeSettingTab(this.app, this));
 
-		this.registerNoteType();
+		this.app.workspace.onLayoutReady(() => {
+			patchMetadataEditor(this);
+		});
 
 		console.log("Note Type plugin version:", this.manifest.version);
 	}
 
-	registerNoteType() {
-		this.app.metadataTypeManager.registeredTypeWidgets[
-			NOTE_TYPE_WIDGET_TYPE
-		] = new NoteTypeWidget(this);
+	onunload() {}
 
-		if (this.settings.key) {
-			this.app.metadataTypeManager.setType(
-				this.settings.key,
-				NOTE_TYPE_WIDGET_TYPE,
-			);
+	onNoteTypeChange(key: string, note?: TFile | null) {
+		if (key == null || key === "") {
+			return;
 		}
-	}
 
-	unregisterNoteType() {
-		delete this.app.metadataTypeManager.registeredTypeWidgets[
-			NOTE_TYPE_WIDGET_TYPE
-		];
-	}
+		if (note == null) {
+			note = this.app.workspace.activeEditor?.file;
+			if (note == null) {
+				return;
+			}
+		}
 
-	onunload() {
-		this.unregisterNoteType();
+		const noteType = this.settings.types.find((t) => t.key === key);
+		console.log(noteType);
 	}
 
 	async loadSettings() {

@@ -1,0 +1,97 @@
+import { around, dedupe } from "monkey-around";
+import { MetadataEditor } from "obsidian-typings";
+import NoteTypePlugin from "./main";
+import { App, DropdownComponent } from "obsidian";
+
+const MONKEY_AROUND_KEY = "note-type-monkey-around-key";
+
+// https://github.com/unxok/obsidian-better-properties/blob/main/src/MetadataEditor/patchMetadataEditor/index.ts
+export function patchMetadataEditor(plugin: NoteTypePlugin) {
+	const editorPrototype = resolveMetadataEditorPrototype(
+		plugin,
+	) as PatchedMetadataEditor;
+
+	editorPrototype.createNoteTypeSelectorEl = function () {
+		return createNoteTypeSelectorEl(plugin, this);
+	};
+
+	const removePatch = around(editorPrototype, {
+		onload(old) {
+			return dedupe(MONKEY_AROUND_KEY, old, function () {
+				// @ts-expect-error
+				const that = this as PatchedMetadataEditor;
+				old.call(that);
+				that.createNoteTypeSelectorEl();
+			});
+		},
+	});
+
+	reloadMetadataEditor(plugin.app);
+
+	plugin.register(removePatch);
+}
+
+export function reloadMetadataEditor(app: App) {
+	app.workspace.iterateAllLeaves((leaf) => {
+		if ("metadataEditor" in leaf.view) {
+			(
+				leaf.view.metadataEditor as PatchedMetadataEditor
+			).createNoteTypeSelectorEl();
+		}
+	});
+}
+
+function resolveMetadataEditorPrototype(plugin: NoteTypePlugin) {
+	const { workspace, viewRegistry } = plugin.app;
+	const leaf = workspace.getLeaf("tab");
+	const view = viewRegistry.viewByType["markdown"](leaf);
+	const editorPrototype = Object.getPrototypeOf(
+		view.metadataEditor,
+	) as MetadataEditor;
+	leaf.detach();
+	return editorPrototype;
+}
+
+interface PatchedMetadataEditor extends MetadataEditor {
+	noteTypeSelectorContainer?: HTMLElement;
+
+	createNoteTypeSelectorEl(): this;
+}
+
+function createNoteTypeSelectorEl(
+	plugin: NoteTypePlugin,
+	editor: PatchedMetadataEditor,
+) {
+	if (editor.noteTypeSelectorContainer != null) {
+		editor.noteTypeSelectorContainer.remove();
+	}
+
+	editor.noteTypeSelectorContainer = createDiv({
+		cls: "note-type-selector-container",
+	});
+
+	initNoteTypeSelector(plugin, editor.noteTypeSelectorContainer);
+
+	editor.contentEl.prepend(editor.noteTypeSelectorContainer);
+
+	return editor;
+}
+
+function initNoteTypeSelector(
+	plugin: NoteTypePlugin,
+	containerEl: HTMLElement,
+) {
+	const dropdown = new DropdownComponent(containerEl);
+
+	const items = plugin.settings.types.reduce(
+		(result, current) => {
+			result[current.key] = current.name;
+			return result;
+		},
+		{ "": "No type" } as Record<string, string>,
+	);
+
+    dropdown.onChange((key) => plugin.onNoteTypeChange(key));
+
+	dropdown.addOptions(items);
+}
