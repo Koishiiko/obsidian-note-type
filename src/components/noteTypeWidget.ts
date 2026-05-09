@@ -1,10 +1,10 @@
-import { DropdownComponent, setIcon, Setting } from "obsidian";
+import { DropdownComponent, setIcon } from "obsidian";
 import {
 	PropertyRenderContext,
 	PropertyWidget,
 	PropertyWidgetComponentBase,
 } from "obsidian-typings";
-import NoteTypePlugin from "./main";
+import NoteTypePlugin from "../main";
 
 export const NOTE_TYPE_WIDGET_TYPE = "note-type:notetype";
 
@@ -18,7 +18,7 @@ export class NoteTypeWidget implements PropertyWidget {
 	constructor(plugin: NoteTypePlugin) {
 		this.plugin = plugin;
 		this.icon = plugin.settings.propertyIcon;
-		this.reservedKeys = plugin.settings.keys;
+		this.reservedKeys = [plugin.settings.key];
 	}
 
 	name(): string {

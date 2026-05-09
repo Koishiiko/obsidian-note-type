@@ -1,12 +1,21 @@
 import { Plugin } from "obsidian";
-import { DEFAULT_SETTINGS, NoteTypePluginSettings } from "./settings";
-import { NOTE_TYPE_WIDGET_TYPE, NoteTypeWidget } from "./note-type-widget";
+import {
+	DEFAULT_SETTINGS,
+	NoteTypePluginSettings,
+	NoteTypeSettingTab,
+} from "./settings";
+import {
+	NOTE_TYPE_WIDGET_TYPE,
+	NoteTypeWidget,
+} from "./components/noteTypeWidget";
 
 export default class NoteTypePlugin extends Plugin {
 	settings!: NoteTypePluginSettings;
 
 	async onload() {
 		await this.loadSettings();
+
+		this.addSettingTab(new NoteTypeSettingTab(this.app, this));
 
 		this.registerNoteType();
 
@@ -18,18 +27,12 @@ export default class NoteTypePlugin extends Plugin {
 			NOTE_TYPE_WIDGET_TYPE
 		] = new NoteTypeWidget(this);
 
-		if (this.settings.keys?.length) {
-			this.settings.keys.forEach((key) =>
-				this.app.metadataTypeManager.setType(
-					key,
-					NOTE_TYPE_WIDGET_TYPE,
-				),
+		if (this.settings.key) {
+			this.app.metadataTypeManager.setType(
+				this.settings.key,
+				NOTE_TYPE_WIDGET_TYPE,
 			);
 		}
-
-		this.app.metadataTypeManager.save();
-
-		console.log(this.app.metadataTypeManager);
 	}
 
 	unregisterNoteType() {
