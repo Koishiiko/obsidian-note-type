@@ -91,7 +91,7 @@ function initNoteTypeSelector(
 		{ "": "No type" } as Record<string, string>,
 	);
 
-    dropdown.onChange((key) => plugin.onNoteTypeChange(key));
+	dropdown.onChange((key) => plugin.onNoteTypeChange(key));
 
 	dropdown.addOptions(items);
 }

@@ -9,3 +9,8 @@ If your plugin does not need CSS, delete this file.
 .note-type-selector-container {
 	margin-bottom: 4px;
 }
+
+.markdown-source-view.is-live-preview.show-properties
+	.metadata-container.note-type {
+	display: block;
+}

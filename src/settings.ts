@@ -4,8 +4,9 @@ import { NoteTypeModal } from "./components/noteTypeModal";
 
 export interface NoteTypePluginSettings {
 	propertyIcon: string;
-	key: string;
-	templateFolder: string;
+	propertyKey: string;
+	hideProperty: boolean;
+	alwaysShowProperties: boolean;
 	types: NoteTypeData[];
 }
 
@@ -17,8 +18,9 @@ export interface NoteTypeData {
 
 export const DEFAULT_SETTINGS: NoteTypePluginSettings = {
 	propertyIcon: "lucide-book",
-	key: "noteType",
-	templateFolder: "templates",
+	propertyKey: "noteType",
+	hideProperty: true,
+	alwaysShowProperties: true,
 	types: [],
 };
 
@@ -66,26 +68,39 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 		});
 
 		group.addSetting((s) => {
-			s.setName("Note type keys")
+			s.setName("Property key")
 				.setDesc("The keys of note type property.")
 				.addText((text) =>
 					text
-						.setValue(this.plugin.settings.key)
+						.setValue(this.plugin.settings.propertyKey)
 						.onChange((value) => {
-							this.plugin.settings.key = value.trim();
+							this.plugin.settings.propertyKey = value.trim();
 							this.plugin.saveSettings();
 						}),
 				);
 		});
 
 		group.addSetting((s) => {
-			s.setName("Template folder")
-				.setDesc("Folder of note type templates.")
-				.addText((text) =>
-					text
-						.setValue(this.plugin.settings.templateFolder)
+			s.setName("Hide property")
+				.setDesc("Hide note type property.")
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.hideProperty)
 						.onChange((value) => {
-							this.plugin.settings.templateFolder = value;
+							this.plugin.settings.hideProperty = value;
+							this.plugin.saveSettings();
+						}),
+				);
+		});
+
+		group.addSetting((s) => {
+			s.setName("Alway show properties")
+				.setDesc("Show properties editor when peropety count is 0.")
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.hideProperty)
+						.onChange((value) => {
+							this.plugin.settings.hideProperty = value;
 							this.plugin.saveSettings();
 						}),
 				);
