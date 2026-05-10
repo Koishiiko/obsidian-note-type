@@ -35,15 +35,21 @@ export default class NoteTypePlugin extends Plugin {
 	}
 
 	async onNoteTypeChange(key: string, note?: TFile | null) {
-		if (key == null || key === "") {
-			return;
-		}
-
 		if (note == null) {
 			note = this.app.workspace.getActiveFile();
 			if (note == null) {
 				return;
 			}
+		}
+
+		if (key == null || key === "") {
+			this.app.fileManager.processFrontMatter(
+				note,
+				(frontmatter: Record<string, unknown>) => {
+					frontmatter[this.settings!.propertyKey] = key;
+				},
+			);
+			return;
 		}
 
 		const noteType = this.settings!.types.find((t) => t.key === key);
