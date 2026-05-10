@@ -1,19 +1,25 @@
-import { normalizePath, Plugin, TFile } from "obsidian";
+import { debounce, Debouncer, normalizePath, Plugin, TFile } from "obsidian";
 import {
 	DEFAULT_SETTINGS,
 	NoteTypeData,
 	NoteTypePluginSettings,
 	NoteTypeSettingTab,
 } from "./settings";
-import { patchMetadataEditor } from "./patchMetadataEditor";
+import {
+	patchMetadataEditor,
+	reloadMetadataEditor,
+} from "./patchMetadataEditor";
 
 export default class NoteTypePlugin extends Plugin {
 	settings!: NoteTypePluginSettings;
 
 	styleEl?: HTMLStyleElement;
 
+	saveSettings!: Debouncer<[], Promise<void>>;
+
 	async onload() {
 		await this.loadSettings();
+		this.saveSettings = debounce(this._saveSettings, 300);
 
 		this.addSettingTab(new NoteTypeSettingTab(this.app, this));
 
@@ -24,7 +30,9 @@ export default class NoteTypePlugin extends Plugin {
 		console.log("Note Type plugin version:", this.manifest.version);
 	}
 
-	onunload() {}
+	onunload() {
+		this.styleEl!.remove();
+	}
 
 	async onNoteTypeChange(key: string, note?: TFile | null) {
 		if (key == null || key === "") {
@@ -38,7 +46,7 @@ export default class NoteTypePlugin extends Plugin {
 			}
 		}
 
-		const noteType = this.settings.types.find((t) => t.key === key);
+		const noteType = this.settings!.types.find((t) => t.key === key);
 		if (noteType == null) {
 			new Notice(`Note type not found: ${key}`);
 			return;
@@ -48,7 +56,7 @@ export default class NoteTypePlugin extends Plugin {
 		this.app.fileManager.processFrontMatter(
 			note,
 			(frontmatter: Record<string, unknown>) => {
-				frontmatter[this.settings.propertyKey] = key;
+				frontmatter[this.settings!.propertyKey] = key;
 
 				for (const [key, value] of Object.entries(
 					templateData.frontmatter as Record<string, unknown>,
@@ -82,9 +90,35 @@ export default class NoteTypePlugin extends Plugin {
 			DEFAULT_SETTINGS,
 			(await this.loadData()) as Partial<NoteTypePluginSettings>,
 		);
+		this.updateStyle();
 	}
 
-	async saveSettings() {
+	async _saveSettings() {
 		await this.saveData(this.settings);
+
+		this.updateStyle();
+		reloadMetadataEditor(this);
+	}
+
+	updateStyle() {
+		if (this.styleEl == null) {
+			this.styleEl = document.head.createEl("style");
+		}
+
+		const styles = [];
+		if (this.settings.alwaysShowProperties) {
+			styles.push(`.markdown-source-view.is-live-preview.show-properties
+	.metadata-container.note-type-metadata-container[data-property-count="0"] {
+	display: block;
+}`);
+		}
+
+		if (this.settings.hideProperty) {
+			styles.push(`.metadata-properties .metadata-property[data-property-key="${this.settings.propertyKey.toLocaleLowerCase()}"] {
+    display: none;
+}`);
+		}
+
+		this.styleEl.textContent = styles.join("\n");
 	}
 }

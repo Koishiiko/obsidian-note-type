@@ -3,7 +3,6 @@ import NoteTypePlugin from "./main";
 import { NoteTypeModal } from "./components/noteTypeModal";
 
 export interface NoteTypePluginSettings {
-	propertyIcon: string;
 	propertyKey: string;
 	hideProperty: boolean;
 	alwaysShowProperties: boolean;
@@ -17,7 +16,6 @@ export interface NoteTypeData {
 }
 
 export const DEFAULT_SETTINGS: NoteTypePluginSettings = {
-	propertyIcon: "lucide-book",
 	propertyKey: "noteType",
 	hideProperty: true,
 	alwaysShowProperties: true,
@@ -45,39 +43,16 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 		const group = new SettingGroup(this.containerEl);
 
 		group.addSetting((s) => {
-			s.setName("Property icon")
-				.setDesc(
-					createFragment((fragment) => {
-						fragment.createEl("span", {
-							text: "The icon name of note type property icon. See: ",
-						});
-						fragment.createEl("a", {
-							href: "https://lucide.dev/icons",
-							text: "lucide icons",
-						});
-					}),
-				)
-				.addText((text) =>
-					text
-						.setValue(this.plugin.settings.propertyIcon)
-						.onChange((value) => {
-							this.plugin.settings.propertyIcon = value;
-							this.plugin.saveSettings();
-						}),
-				);
-		});
-
-		group.addSetting((s) => {
 			s.setName("Property key")
 				.setDesc("The keys of note type property.")
-				.addText((text) =>
-					text
-						.setValue(this.plugin.settings.propertyKey)
-						.onChange((value) => {
-							this.plugin.settings.propertyKey = value.trim();
-							this.plugin.saveSettings();
-						}),
-				);
+				.addText((text) => {
+					text.setValue(this.plugin.settings.propertyKey);
+					text.inputEl.addEventListener("blur", (e) => {
+						this.plugin.settings.propertyKey =
+							text.inputEl.value.trim();
+						this.plugin.saveSettings();
+					});
+				});
 		});
 
 		group.addSetting((s) => {
@@ -98,9 +73,9 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 				.setDesc("Show properties editor when peropety count is 0.")
 				.addToggle((toggle) =>
 					toggle
-						.setValue(this.plugin.settings.hideProperty)
+						.setValue(this.plugin.settings.alwaysShowProperties)
 						.onChange((value) => {
-							this.plugin.settings.hideProperty = value;
+							this.plugin.settings.alwaysShowProperties = value;
 							this.plugin.saveSettings();
 						}),
 				);

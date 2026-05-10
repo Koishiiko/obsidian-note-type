@@ -1,7 +1,7 @@
 import { around, dedupe } from "monkey-around";
 import { MetadataEditor } from "obsidian-typings";
 import NoteTypePlugin from "./main";
-import { App, DropdownComponent } from "obsidian";
+import { DropdownComponent } from "obsidian";
 
 const MONKEY_AROUND_KEY = "note-type-monkey-around-key";
 
@@ -11,32 +11,27 @@ export function patchMetadataEditor(plugin: NoteTypePlugin) {
 		plugin,
 	) as PatchedMetadataEditor;
 
-	editorPrototype.createNoteTypeSelectorEl = function () {
-		return createNoteTypeSelectorEl(plugin, this);
-	};
-
 	const removePatch = around(editorPrototype, {
 		onload(old) {
 			return dedupe(MONKEY_AROUND_KEY, old, function () {
 				// @ts-expect-error
 				const that = this as PatchedMetadataEditor;
 				old.call(that);
-				that.createNoteTypeSelectorEl();
+				createNoteTypeSelectorEl(plugin, that);
+				addClass(plugin, that);
 			});
 		},
 	});
 
-	reloadMetadataEditor(plugin.app);
+	reloadMetadataEditor(plugin);
 
 	plugin.register(removePatch);
 }
 
-export function reloadMetadataEditor(app: App) {
-	app.workspace.iterateAllLeaves((leaf) => {
+export function reloadMetadataEditor(plugin: NoteTypePlugin) {
+	plugin.app.workspace.iterateAllLeaves((leaf) => {
 		if ("metadataEditor" in leaf.view) {
-			(
-				leaf.view.metadataEditor as PatchedMetadataEditor
-			).createNoteTypeSelectorEl();
+			leaf.rebuildView();
 		}
 	});
 }
@@ -54,8 +49,6 @@ function resolveMetadataEditorPrototype(plugin: NoteTypePlugin) {
 
 interface PatchedMetadataEditor extends MetadataEditor {
 	noteTypeSelectorContainer?: HTMLElement;
-
-	createNoteTypeSelectorEl(): this;
 }
 
 function createNoteTypeSelectorEl(
@@ -83,7 +76,7 @@ function initNoteTypeSelector(
 ) {
 	const dropdown = new DropdownComponent(containerEl);
 
-	const items = plugin.settings.types.reduce(
+	const items = plugin.settings!.types.reduce(
 		(result, current) => {
 			result[current.key] = current.name;
 			return result;
@@ -94,4 +87,8 @@ function initNoteTypeSelector(
 	dropdown.onChange((key) => plugin.onNoteTypeChange(key));
 
 	dropdown.addOptions(items);
+}
+
+function addClass(plugin: NoteTypePlugin, editor: PatchedMetadataEditor) {
+	editor.containerEl.addClass("note-type-metadata-container");
 }
