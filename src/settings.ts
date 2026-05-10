@@ -194,7 +194,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 					? structuredClone(this.plugin.settings.types[index]!)
 					: undefined;
 			new NoteTypeModal(this.plugin, {
-				title: index ? "Update note type" : "Add note type",
+				title: index != null ? "Update note type" : "Add note type",
 				data: type,
 				onSubmit: (newData) => {
 					if (

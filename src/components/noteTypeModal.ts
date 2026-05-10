@@ -1,4 +1,4 @@
-import { Modal, PaneType, Setting, SettingGroup } from "obsidian";
+import { Modal, Setting, SettingGroup } from "obsidian";
 import { NoteTypeData } from "../settings";
 import NoteTypePlugin from "../main";
 import { FileSuggester } from "./fileSuggester";
@@ -14,7 +14,7 @@ export interface NoteTypeModalProps {
 	onCancel?: () => void;
 }
 
-const DEFUALT_NOTE_TYPE: NoteTypeData = {
+const DEFAULT_NOTE_TYPE: NoteTypeData = {
 	key: "new-type",
 	name: "New type",
 };
@@ -30,7 +30,7 @@ export class NoteTypeModal extends Modal {
 		super(plugin.app);
 		this.plugin = plugin;
 		this.props = props;
-		this.props.data ??= structuredClone(DEFUALT_NOTE_TYPE);
+		this.props.data ??= structuredClone(DEFAULT_NOTE_TYPE);
 	}
 
 	onOpen(): Promise<void> | void {

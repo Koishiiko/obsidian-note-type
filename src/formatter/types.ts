@@ -19,7 +19,7 @@ export abstract class Formatter {
 	): Promise<FormatData>;
 }
 
-export type FormatVariable = string | number | moment.Moment | unknown;
+export type FormatVariable = unknown;
 
 export interface FormatOptions {}
 

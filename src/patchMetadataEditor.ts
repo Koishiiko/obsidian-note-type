@@ -104,7 +104,7 @@ function initNoteTypeSelector(
 			return;
 		}
 
-		const canceled = await plugin.onNoteTypeChange(key);
+		const canceled = await plugin.manager.onNoteTypeChange(key);
 		if (canceled) {
 			dropdown.setValue(oldType);
 		}
