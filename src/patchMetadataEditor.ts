@@ -5,7 +5,7 @@ import { DropdownComponent } from "obsidian";
 
 const MONKEY_AROUND_KEY = "note-type-monkey-around-key";
 
-const NO_TYPE_KEY = "";
+export const NO_TYPE_KEY = "";
 
 // https://github.com/unxok/obsidian-better-properties/blob/main/src/MetadataEditor/patchMetadataEditor/index.ts
 export function patchMetadataEditor(plugin: NoteTypePlugin) {
@@ -74,10 +74,7 @@ function createNoteTypeSelectorEl(
 		cls: "note-type-selector-container",
 	});
 
-	editor.noteTypeDropdown = initNoteTypeSelector(
-		plugin,
-		editor.noteTypeSelectorContainer,
-	);
+	editor.noteTypeDropdown = initNoteTypeSelector(plugin, editor);
 
 	editor.contentEl.prepend(editor.noteTypeSelectorContainer);
 
@@ -86,9 +83,9 @@ function createNoteTypeSelectorEl(
 
 function initNoteTypeSelector(
 	plugin: NoteTypePlugin,
-	containerEl: HTMLElement,
+	editor: PatchedMetadataEditor,
 ) {
-	const dropdown = new DropdownComponent(containerEl);
+	const dropdown = new DropdownComponent(editor.noteTypeSelectorContainer!);
 
 	const items = plugin.settings!.types.reduce(
 		(result, current) => {
@@ -98,7 +95,20 @@ function initNoteTypeSelector(
 		{ [NO_TYPE_KEY]: "No type" } as Record<string, string>,
 	);
 
-	dropdown.onChange((key) => plugin.onNoteTypeChange(key));
+	dropdown.onChange(async (key) => {
+		const oldType = (editor.properties.find(
+			(p) => p.key === plugin.settings.propertyKey,
+		)?.value ?? NO_TYPE_KEY) as string;
+
+		if (oldType === key) {
+			return;
+		}
+
+		const canceled = await plugin.onNoteTypeChange(key);
+		if (canceled) {
+			dropdown.setValue(oldType);
+		}
+	});
 
 	dropdown.addOptions(items);
 
@@ -112,10 +122,14 @@ function addClass(plugin: NoteTypePlugin, editor: PatchedMetadataEditor) {
 function updateSelector(
 	plugin: NoteTypePlugin,
 	editor: PatchedMetadataEditor,
-	data: Record<string, unknown>,
+	data?: Record<string, unknown>,
 ) {
+	if (data == null || editor.noteTypeDropdown == null) {
+		return;
+	}
+
 	let value = data[plugin.settings.propertyKey] as string;
-	if (editor.noteTypeDropdown?.getValue() === value) {
+	if (editor.noteTypeDropdown.getValue() === value) {
 		return;
 	}
 
@@ -123,5 +137,5 @@ function updateSelector(
 		value = NO_TYPE_KEY;
 	}
 
-	editor.noteTypeDropdown!.setValue(value as string);
+	editor.noteTypeDropdown.setValue(value as string);
 }

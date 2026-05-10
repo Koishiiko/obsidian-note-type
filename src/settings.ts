@@ -13,6 +13,7 @@ export interface NoteTypeData {
 	key: string;
 	name: string;
 	template?: string;
+	formatter?: string;
 }
 
 export const DEFAULT_SETTINGS: NoteTypePluginSettings = {

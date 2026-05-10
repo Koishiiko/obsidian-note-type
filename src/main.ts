@@ -1,4 +1,11 @@
-import { debounce, Debouncer, normalizePath, Plugin, TFile } from "obsidian";
+import {
+	debounce,
+	Debouncer,
+	normalizePath,
+	Plugin,
+	stringifyYaml,
+	TFile,
+} from "obsidian";
 import {
 	DEFAULT_SETTINGS,
 	NoteTypeData,
@@ -9,6 +16,14 @@ import {
 	patchMetadataEditor,
 	reloadMetadataEditor,
 } from "./patchMetadataEditor";
+import { FormatData, Formatter } from "./formatter";
+import { DefaultFormatter } from "./formatter/defaultFormatter";
+import { defaultVairables } from "./formatter/utils";
+import {
+	defaultOverwriteTypeData,
+	OverwriteTypeData,
+	showOverwriteConfirmModal,
+} from "./components/overwriteConfirmModal";
 
 export default class NoteTypePlugin extends Plugin {
 	settings!: NoteTypePluginSettings;
@@ -16,6 +31,8 @@ export default class NoteTypePlugin extends Plugin {
 	styleEl?: HTMLStyleElement;
 
 	saveSettings!: Debouncer<[], Promise<void>>;
+
+	formatters: Formatter[] = [new DefaultFormatter(this)];
 
 	async onload() {
 		await this.loadSettings();
@@ -34,7 +51,10 @@ export default class NoteTypePlugin extends Plugin {
 		this.styleEl!.remove();
 	}
 
-	async onNoteTypeChange(key: string, note?: TFile | null) {
+	async onNoteTypeChange(
+		key: string,
+		note?: TFile | null,
+	): Promise<void | true> {
 		if (note == null) {
 			note = this.app.workspace.getActiveFile();
 			if (note == null) {
@@ -42,52 +62,99 @@ export default class NoteTypePlugin extends Plugin {
 			}
 		}
 
-		if (key == null || key === "") {
-			this.app.fileManager.processFrontMatter(
-				note,
-				(frontmatter: Record<string, unknown>) => {
-					frontmatter[this.settings!.propertyKey] = key;
-				},
-			);
+		const noteCache = this.app.metadataCache.getFileCache(note);
+		const noteFrontmatter = noteCache?.frontmatter as Record<string, any>;
+
+		const oldKey = noteFrontmatter?.[this.settings.propertyKey];
+		if (oldKey === key) {
 			return;
+		}
+
+		const haveFrontmatter =
+			noteFrontmatter != null &&
+			Object.keys(noteFrontmatter).some(
+				(key) => key !== this.settings.propertyKey,
+			);
+
+		const noteContent = await this.app.vault.cachedRead(note);
+		const haveContent =
+			noteContent.length >
+			(noteCache?.frontmatterPosition?.end.offset ?? 0);
+
+		let overwriteType: OverwriteTypeData = defaultOverwriteTypeData();
+		if (haveFrontmatter || haveContent) {
+			const type = await showOverwriteConfirmModal(this.app);
+			if (type == null) {
+				return true;
+			}
+			overwriteType = type;
 		}
 
 		const noteType = this.settings!.types.find((t) => t.key === key);
-		if (noteType == null) {
-			new Notice(`Note type not found: ${key}`);
-			return;
-		}
 
-		const templateData = await this.formatTemplate(noteType);
-		this.app.fileManager.processFrontMatter(
-			note,
-			(frontmatter: Record<string, unknown>) => {
-				frontmatter[this.settings!.propertyKey] = key;
+		const templateData = await this.formatTemplate(note, noteType);
 
-				for (const [key, value] of Object.entries(
-					templateData.frontmatter as Record<string, unknown>,
-				)) {
+		let frontmatter: Record<string, unknown> | null;
+		if (overwriteType.frontmatter === "replace") {
+			frontmatter = templateData.frontmatter ?? {};
+		} else {
+			frontmatter =
+				noteFrontmatter == null ? {} : structuredClone(noteFrontmatter);
+
+			for (const [key, value] of Object.entries(
+				templateData.frontmatter ?? {},
+			)) {
+				if (overwriteType.frontmatter === "overwrite") {
+					frontmatter[key] = value;
+				} else if (
+					overwriteType.frontmatter === "keep" &&
+					frontmatter[key] == null
+				) {
 					frontmatter[key] = value;
 				}
-			},
-		);
+			}
+		}
+		frontmatter[this.settings.propertyKey] = key;
+
+		let content: string;
+		if (overwriteType.content === "replace") {
+			content = templateData.content ?? "";
+		} else {
+			content = haveFrontmatter
+				? noteContent.substring(
+						noteCache!.frontmatterPosition!.end.offset,
+					)
+				: noteContent;
+		}
+
+		const writeContent = `---\n${stringifyYaml(frontmatter)}\n---\n${content.trimStart()}`;
+		await this.app.vault.modify(note, writeContent);
 	}
 
-	async formatTemplate(noteType: NoteTypeData) {
-		if (noteType.template == null) {
+	async formatTemplate(
+		note: TFile,
+		noteType?: NoteTypeData,
+	): Promise<FormatData> {
+		if (noteType?.template == null) {
 			return {};
 		}
 
 		const templatePath = normalizePath(noteType.template);
-		const file = this.app.vault.getFileByPath(templatePath);
-		if (file == null) {
+		const template = this.app.vault.getFileByPath(templatePath);
+		if (template == null) {
 			return {};
 		}
 
-		const cache = this.app.metadataCache.getFileCache(file);
-		return {
-			frontmatter: cache?.frontmatter,
-		};
+		const formatter =
+			this.formatters.find((f) => f.key === noteType.formatter) ??
+			this.formatters[0];
+
+		return await formatter!.formatTemplate(
+			note,
+			template,
+			defaultVairables(note),
+			{},
+		);
 	}
 
 	async loadSettings() {

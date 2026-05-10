@@ -2,6 +2,7 @@ import { Modal, PaneType, Setting, SettingGroup } from "obsidian";
 import { NoteTypeData } from "../settings";
 import NoteTypePlugin from "../main";
 import { FileSuggester } from "./fileSuggester";
+import { DEFAULT_FORMATTER_KEY } from "../formatter";
 
 export interface NoteTypeModalProps {
 	title: string;
@@ -99,6 +100,22 @@ export class NoteTypeModal extends Modal {
 					(value) => (data.template = value),
 				);
 				new FileSuggester(this.app, t.inputEl, { type: "files" });
+			}),
+		);
+
+		group.addSetting((s) =>
+			s.setName("Formatter").addDropdown((d) => {
+				d.setValue(data.formatter ?? DEFAULT_FORMATTER_KEY)
+					.addOptions(
+						this.plugin.formatters.reduce(
+							(res, type) => {
+								res[type.key] = type.name;
+								return res;
+							},
+							{} as Record<string, string>,
+						),
+					)
+					.onChange((value) => (data.formatter = value));
 			}),
 		);
 	}
