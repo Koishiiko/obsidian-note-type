@@ -7,7 +7,7 @@ import {
 } from "./types";
 import { splitFrontmatter } from "./utils";
 
-export const DEFAULT_FORMATTER_KEY = "Default";
+export const DEFAULT_FORMATTER_KEY = "default";
 
 export class DefaultFormatter extends Formatter {
 	key = DEFAULT_FORMATTER_KEY;

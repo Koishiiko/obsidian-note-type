@@ -66,6 +66,8 @@ export class NoteTypeModal extends Modal {
 	onClose(): void {
 		if (!this.isConfirmed && this.props.onCancel != null) {
 			this.props.onCancel();
+		} else if (this.props.onSubmit != null) {
+			this.props.onSubmit(this.props.data!);
 		}
 	}
 
@@ -77,6 +79,9 @@ export class NoteTypeModal extends Modal {
 		group.addSetting((s) =>
 			s
 				.setName("Key")
+				.setDesc(
+					"Unique identifier for this note type, it will be set to the property key.",
+				)
 				.addText((t) =>
 					t
 						.setValue(data.key)
@@ -87,6 +92,7 @@ export class NoteTypeModal extends Modal {
 		group.addSetting((s) =>
 			s
 				.setName("Name")
+				.setDesc("Display name of the note type.")
 				.addText((t) =>
 					t
 						.setValue(data.name)
@@ -95,18 +101,25 @@ export class NoteTypeModal extends Modal {
 		);
 
 		group.addSetting((s) =>
-			s.setName("Template").addText((t) => {
-				t.setValue(data.template ?? "").onChange(
-					(value) => (data.template = value),
-				);
-				new FileSuggester(this.app, t.inputEl, { type: "files" });
-			}),
+			s
+				.setName("Template")
+				.setDesc(
+					"Template file to use when filling a note of this type.",
+				)
+				.addText((t) => {
+					t.setValue(data.template ?? "").onChange(
+						(value) => (data.template = value),
+					);
+					new FileSuggester(this.app, t.inputEl, { type: "files" });
+				}),
 		);
 
 		group.addSetting((s) =>
-			s.setName("Formatter").addDropdown((d) => {
-				d.setValue(data.formatter ?? DEFAULT_FORMATTER_KEY)
-					.addOptions(
+			s
+				.setName("Formatter")
+				.setDesc("Template formatter.")
+				.addDropdown((d) => {
+					d.addOptions(
 						this.plugin.formatters.reduce(
 							(res, type) => {
 								res[type.key] = type.name;
@@ -115,8 +128,9 @@ export class NoteTypeModal extends Modal {
 							{} as Record<string, string>,
 						),
 					)
-					.onChange((value) => (data.formatter = value));
-			}),
+						.setValue(data.formatter ?? DEFAULT_FORMATTER_KEY)
+						.onChange((value) => (data.formatter = value));
+				}),
 		);
 	}
 }

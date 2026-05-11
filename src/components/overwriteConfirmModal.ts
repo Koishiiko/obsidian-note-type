@@ -1,4 +1,5 @@
 import { App, Modal, Setting } from "obsidian";
+import { RadioGroupComponent } from "./RadioGroup";
 
 export type PropertyOverwriteType = "keep" | "replace" | "overwrite";
 export type ContentOverwriteType = "keep" | "replace";
@@ -33,36 +34,38 @@ export class OverwriteConfirmModal extends Modal {
 
 	onOpen() {
 		this.setTitle("Note already have content");
+		this.modalEl.addClass("overwrite-confirm-modal");
 
-		new Setting(this.contentEl)
+		const propertySetting = new Setting(this.contentEl)
 			.setName("Property behavior")
-			.addDropdown((d) => {
-				d.setValue(this.data.frontmatter);
-				d.addOptions({
-					keep: "Fill by template if not exists",
-					replace: "Replace by template",
-					overwrite: "Overwrite current if already exists",
-				});
-				d.onChange(
-					(value) =>
-						(this.data.frontmatter =
-							value as PropertyOverwriteType),
-				);
-			});
+			.setDesc("How the template's properties are applied.");
 
-		new Setting(this.contentEl)
+		new RadioGroupComponent(propertySetting.controlEl)
+			.addOptions({
+				overwrite: "Overwrite",
+				keep: "Keep current",
+				replace: "Replace",
+			})
+			.setValue(this.data.frontmatter)
+			.onChange((value) => {
+				this.data.frontmatter = value as PropertyOverwriteType;
+			})
+			.build();
+
+		const contentSetting = new Setting(this.contentEl)
 			.setName("Content behavior")
-			.addDropdown((d) => {
-				d.setValue(this.data.content);
-				d.addOptions({
-					replace: "Replace current by template",
-					keep: "Keep current",
-				});
-				d.onChange(
-					(value) =>
-						(this.data.content = value as ContentOverwriteType),
-				);
-			});
+			.setDesc("How the template's content are filled.");
+
+		new RadioGroupComponent(contentSetting.controlEl)
+			.addOptions({
+				replace: "Replace",
+				keep: "Keep current",
+			})
+			.setValue(this.data.content)
+			.onChange((value) => {
+				this.data.content = value as ContentOverwriteType;
+			})
+			.build();
 
 		new Setting(this.contentEl)
 			.addButton((btn) =>

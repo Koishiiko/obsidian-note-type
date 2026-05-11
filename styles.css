@@ -1,11 +1,16 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
 .note-type-selector-container {
 	margin-bottom: 4px;
+}
+
+.mod-radio-group {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.mod-radio-label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	cursor: pointer;
 }
