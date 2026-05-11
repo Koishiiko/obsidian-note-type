@@ -4,7 +4,6 @@ import { NoteTypeData } from "./settings";
 import { FormatData } from "./formatter";
 import {
 	ContentOverwriteType,
-	defaultOverwriteTypeData,
 	OverwriteTypeData,
 	PropertyOverwriteType,
 	showOverwriteConfirmModal,
@@ -34,13 +33,28 @@ export class NoteTypeManager {
 			return;
 		}
 
+		let overwriteType: OverwriteTypeData | null = {
+			frontmatter: this.plugin.settings.defaultPropertyOverwriteType,
+			content: this.plugin.settings.defaultContentOverwriteType,
+		};
 		if (await this.hasExistingContent(note, noteCache)) {
-			const overwriteType = await showOverwriteConfirmModal(
-				this.plugin.app,
-			);
+			if (this.plugin.settings.showConfictModal) {
+				overwriteType = await showOverwriteConfirmModal(
+					this.plugin.app,
+					overwriteType,
+				);
+			} else {
+				overwriteType = {
+					frontmatter:
+						this.plugin.settings.defaultPropertyOverwriteType,
+					content: this.plugin.settings.defaultContentOverwriteType,
+				};
+			}
+
 			if (overwriteType == null) {
 				return true;
 			}
+
 			await this.applyNoteType(
 				note,
 				key,
@@ -54,7 +68,7 @@ export class NoteTypeManager {
 				key,
 				noteCache,
 				noteFrontmatter,
-				defaultOverwriteTypeData(),
+				overwriteType,
 			);
 		}
 	}

@@ -1,35 +1,45 @@
 import { App, Modal, Setting } from "obsidian";
-import { RadioGroupComponent } from "./RadioGroup";
+import { RadioGroupComponent } from "./radioGroup";
 
 export type PropertyOverwriteType = "keep" | "replace" | "overwrite";
 export type ContentOverwriteType = "keep" | "replace";
+
+export const propertyOverwriteTypes = {
+	overwrite: "Overwrite",
+	keep: "Keep current",
+	replace: "Replace",
+};
+export const contentOverwriteTypes = {
+	replace: "Replace",
+	keep: "Keep current",
+};
 
 export interface OverwriteTypeData {
 	frontmatter: PropertyOverwriteType;
 	content: ContentOverwriteType;
 }
 
-export function defaultOverwriteTypeData(): OverwriteTypeData {
-	return {
-		frontmatter: "overwrite",
-		content: "replace",
-	};
-}
-
-export function showOverwriteConfirmModal(app: App) {
+export function showOverwriteConfirmModal(
+	app: App,
+	overwriteType: OverwriteTypeData,
+) {
 	return new Promise<OverwriteTypeData | null>((resolve) => {
-		new OverwriteConfirmModal(app, (type) => resolve(type)).open();
+		new OverwriteConfirmModal(app, overwriteType, (type) =>
+			resolve(type),
+		).open();
 	});
 }
 
 export class OverwriteConfirmModal extends Modal {
-	data: OverwriteTypeData = defaultOverwriteTypeData();
+	data: OverwriteTypeData;
 	isConfirm = false;
 	constructor(
 		app: App,
+		data: OverwriteTypeData,
 		public callback: (type: OverwriteTypeData | null) => void,
 	) {
 		super(app);
+		this.data = data;
 	}
 
 	onOpen() {
@@ -41,11 +51,7 @@ export class OverwriteConfirmModal extends Modal {
 			.setDesc("How the template's properties are applied.");
 
 		new RadioGroupComponent(propertySetting.controlEl, "property")
-			.addOptions({
-				overwrite: "Overwrite",
-				keep: "Keep current",
-				replace: "Replace",
-			})
+			.addOptions(propertyOverwriteTypes)
 			.setValue(this.data.frontmatter)
 			.onChange((value) => {
 				this.data.frontmatter = value as PropertyOverwriteType;
@@ -57,10 +63,7 @@ export class OverwriteConfirmModal extends Modal {
 			.setDesc("How the template's content are filled.");
 
 		new RadioGroupComponent(contentSetting.controlEl, "content")
-			.addOptions({
-				replace: "Replace",
-				keep: "Keep current",
-			})
+			.addOptions(contentOverwriteTypes)
 			.setValue(this.data.content)
 			.onChange((value) => {
 				this.data.content = value as ContentOverwriteType;

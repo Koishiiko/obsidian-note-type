@@ -1,12 +1,23 @@
 import { App, ButtonComponent, PluginSettingTab, SettingGroup } from "obsidian";
 import NoteTypePlugin from "./main";
 import { NoteTypeModal } from "./components/noteTypeModal";
+import {
+	ContentOverwriteType,
+	contentOverwriteTypes,
+	PropertyOverwriteType,
+	propertyOverwriteTypes,
+} from "./components/overwriteConfirmModal";
 
 export interface NoteTypePluginSettings {
 	propertyKey: string;
 	hideProperty: boolean;
 	alwaysShowProperties: boolean;
+
 	types: NoteTypeData[];
+
+	showConfictModal: boolean;
+	defaultPropertyOverwriteType: PropertyOverwriteType;
+	defaultContentOverwriteType: ContentOverwriteType;
 }
 
 export interface NoteTypeData {
@@ -20,7 +31,12 @@ export const DEFAULT_SETTINGS: NoteTypePluginSettings = {
 	propertyKey: "noteType",
 	hideProperty: true,
 	alwaysShowProperties: true,
+
 	types: [],
+
+	showConfictModal: true,
+	defaultPropertyOverwriteType: "overwrite",
+	defaultContentOverwriteType: "replace",
 };
 
 export class NoteTypeSettingTab extends PluginSettingTab {
@@ -37,6 +53,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		this.base();
+		this.overwrite();
 		this.types();
 	}
 
@@ -48,6 +65,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 				.setDesc("The keys of note type property.")
 				.addText((text) => {
 					text.setValue(this.plugin.settings.propertyKey);
+					text.inputEl.tabIndex = -1;
 					text.inputEl.addEventListener("blur", (e) => {
 						this.plugin.settings.propertyKey =
 							text.inputEl.value.trim();
@@ -77,6 +95,62 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.alwaysShowProperties)
 						.onChange((value) => {
 							this.plugin.settings.alwaysShowProperties = value;
+							this.plugin.saveSettings();
+						}),
+				);
+		});
+	}
+
+	overwrite() {
+		const group = new SettingGroup(this.containerEl);
+		group.setHeading("Overwrite");
+
+		group.addSetting((s) => {
+			s.setName("Show conflict modal")
+				.setDesc("Weather show conflict modal when toggle note type.")
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.showConfictModal)
+						.onChange((value) => {
+							this.plugin.settings.showConfictModal = value;
+							this.plugin.saveSettings();
+						}),
+				);
+		});
+
+		group.addSetting((s) => {
+			s.setName("Default overwrite property behavior")
+				.setDesc(
+					"Default behavior for how template's properties are applied.",
+				)
+				.addDropdown((toggle) =>
+					toggle
+						.addOptions(propertyOverwriteTypes)
+						.setValue(
+							this.plugin.settings.defaultPropertyOverwriteType,
+						)
+						.onChange((value) => {
+							this.plugin.settings.defaultPropertyOverwriteType =
+								value as PropertyOverwriteType;
+							this.plugin.saveSettings();
+						}),
+				);
+		});
+
+		group.addSetting((s) => {
+			s.setName("Default overwrite content behavior")
+				.setDesc(
+					"Default behavior for how the template's content are filled.",
+				)
+				.addDropdown((toggle) =>
+					toggle
+						.addOptions(contentOverwriteTypes)
+						.setValue(
+							this.plugin.settings.defaultContentOverwriteType,
+						)
+						.onChange((value) => {
+							this.plugin.settings.defaultContentOverwriteType =
+								value as ContentOverwriteType;
 							this.plugin.saveSettings();
 						}),
 				);

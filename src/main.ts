@@ -1,4 +1,4 @@
-import { debounce, Debouncer, Plugin } from "obsidian";
+import { debounce, Debouncer, Plugin, TFile } from "obsidian";
 import {
 	DEFAULT_SETTINGS,
 	NoteTypePluginSettings,
@@ -33,6 +33,10 @@ export default class NoteTypePlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			patchMetadataEditor(this);
+
+			this.registerEvent(
+				this.app.workspace.on("file-open", this.addNoteTypeProperty),
+			);
 		});
 
 		console.log("Note Type plugin version:", this.manifest.version);
@@ -41,6 +45,9 @@ export default class NoteTypePlugin extends Plugin {
 	onunload() {
 		this.styleEl?.remove();
 	}
+
+	addNoteTypeProperty(file: TFile | null) {
+    }
 
 	getFormatter(key?: string) {
 		key ??= DEFAULT_FORMATTER_KEY;
