@@ -7,7 +7,7 @@ export interface IconDropdownOption {
 	iconColor?: string;
 }
 
-const DEFAULT_ICON = "book";
+export const DEFAULT_ICON = "book";
 
 export class IconDropdown {
 	parentEl: HTMLElement;

@@ -102,6 +102,35 @@ export class NoteTypeModal extends Modal {
 
 		group.addSetting((s) =>
 			s
+				.setName("Icon")
+				.setDesc(
+					createFragment((f) => {
+						(f.createSpan({ text: "See: " }),
+							f.createEl("a", {
+								text: "Lucide icon",
+								href: "https://lucide.dev/icons",
+							}));
+					}),
+				)
+				.addText((t) =>
+					t
+						.setValue(data.icon ?? "")
+						.onChange((value) => (data.name = value)),
+				),
+		);
+
+		group.addSetting((s) =>
+			s
+				.setName("Icon color")
+				.addColorPicker((p) =>
+					p
+						.setValue(data.iconColor ?? "")
+						.onChange((value) => (data.iconColor = value)),
+				),
+		);
+
+		group.addSetting((s) =>
+			s
 				.setName("Template")
 				.setDesc(
 					"Template file to use when filling a note of this type.",

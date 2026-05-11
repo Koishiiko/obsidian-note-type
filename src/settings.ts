@@ -1,4 +1,10 @@
-import { App, ButtonComponent, PluginSettingTab, SettingGroup } from "obsidian";
+import {
+	App,
+	ButtonComponent,
+	PluginSettingTab,
+	setIcon,
+	SettingGroup,
+} from "obsidian";
 import NoteTypePlugin from "./main";
 import { NoteTypeModal } from "./components/noteTypeModal";
 import {
@@ -8,6 +14,7 @@ import {
 	propertyOverwriteTypes,
 } from "./components/overwriteConfirmModal";
 import { NO_TYPE_KEY } from "./patchMetadataEditor";
+import { DEFAULT_ICON } from "./components/iconDropdown";
 
 export interface NoteTypePluginSettings {
 	propertyKey: string;
@@ -27,6 +34,8 @@ export interface NoteTypePluginSettings {
 export interface NoteTypeData {
 	key: string;
 	name: string;
+	icon?: string;
+	iconColor?: string;
 	template?: string;
 	formatter?: string;
 }
@@ -236,7 +245,17 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 
 			group.addSetting((s) =>
 				s
-					.setName(item.name)
+					.setName(
+						createFragment((f) => {
+							const containerEl = f.createDiv({
+								cls: "setting-note-type-name-label",
+							});
+							const iconEl = containerEl.createSpan();
+							iconEl.style.color = item.iconColor ?? "";
+							setIcon(iconEl, item.icon ?? DEFAULT_ICON);
+							containerEl.createSpan({ text: item.name });
+						}),
+					)
 					.addButton((btn) =>
 						btn
 							.setIcon("arrow-up")

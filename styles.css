@@ -1,3 +1,14 @@
+/* always show metadata editor */
+.metadata-container.note-type-metadata-container[data-property-count="0"] {
+	display: block;
+}
+
+.setting-note-type-name-label {
+	display: flex;
+	justify-items: center;
+	gap: 8px;
+}
+
 .note-type-selector-container {
 	margin-bottom: 8px;
 }
@@ -40,6 +51,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	margin-top: 4px;
 }
 
 .icon-dropdown-menu {
@@ -52,7 +64,7 @@
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
 	background: var(--background-primary);
-	z-index: 100;
+	z-index: 1000;
 	overflow-y: auto;
 	padding: 4px;
 }
