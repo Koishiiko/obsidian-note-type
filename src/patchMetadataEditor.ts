@@ -1,7 +1,7 @@
 import { around, dedupe } from "monkey-around";
 import { MetadataEditor } from "obsidian-typings";
 import NoteTypePlugin from "./main";
-import { DropdownComponent } from "obsidian";
+import { IconDropdown } from "./components/iconDropdown";
 
 const MONKEY_AROUND_KEY = "note-type-monkey-around-key";
 
@@ -59,7 +59,7 @@ function resolveMetadataEditorPrototype(plugin: NoteTypePlugin) {
 
 interface PatchedMetadataEditor extends MetadataEditor {
 	noteTypeSelectorContainer?: HTMLElement;
-	noteTypeDropdown?: DropdownComponent;
+	noteTypeDropdown?: IconDropdown;
 }
 
 function createNoteTypeSelectorEl(
@@ -85,15 +85,7 @@ function initNoteTypeSelector(
 	plugin: NoteTypePlugin,
 	editor: PatchedMetadataEditor,
 ) {
-	const dropdown = new DropdownComponent(editor.noteTypeSelectorContainer!);
-
-	const items = plugin.settings!.types.reduce(
-		(result, current) => {
-			result[current.key] = current.name;
-			return result;
-		},
-		{ [NO_TYPE_KEY]: "No type" } as Record<string, string>,
-	);
+	const dropdown = new IconDropdown(editor.noteTypeSelectorContainer!);
 
 	dropdown.onChange(async (key) => {
 		const oldType = (editor.properties.find(
@@ -110,7 +102,12 @@ function initNoteTypeSelector(
 		}
 	});
 
-	dropdown.addOptions(items);
+	const options = [
+		{ key: NO_TYPE_KEY, name: "No type" },
+		...plugin.settings.types,
+	];
+
+	dropdown.addOptions(options);
 
 	return dropdown;
 }

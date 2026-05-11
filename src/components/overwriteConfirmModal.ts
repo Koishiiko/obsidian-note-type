@@ -40,7 +40,7 @@ export class OverwriteConfirmModal extends Modal {
 			.setName("Property behavior")
 			.setDesc("How the template's properties are applied.");
 
-		new RadioGroupComponent(propertySetting.controlEl)
+		new RadioGroupComponent(propertySetting.controlEl, "property")
 			.addOptions({
 				overwrite: "Overwrite",
 				keep: "Keep current",
@@ -56,7 +56,7 @@ export class OverwriteConfirmModal extends Modal {
 			.setName("Content behavior")
 			.setDesc("How the template's content are filled.");
 
-		new RadioGroupComponent(contentSetting.controlEl)
+		new RadioGroupComponent(contentSetting.controlEl, "content")
 			.addOptions({
 				replace: "Replace",
 				keep: "Keep current",

@@ -5,9 +5,12 @@ export class RadioGroupComponent {
 	private currentValue: string;
 	private radioInputs: HTMLInputElement[] = [];
 
-	constructor(containerEl: HTMLElement) {
+	groupName: string;
+
+	constructor(containerEl: HTMLElement, groupName: string) {
 		this.containerEl = containerEl;
 		this.currentValue = "";
+		this.groupName = groupName;
 	}
 
 	addOptions(options: Record<string, string>): this {
@@ -34,6 +37,7 @@ export class RadioGroupComponent {
 		this.radioInputs = [];
 
 		const wrapper = this.containerEl.createDiv("mod-radio-group");
+		const groupName = `radio-${Math.random().toString(36).slice(2, 8)}`;
 
 		Object.entries(this.options).forEach(([key, value]) => {
 			const label = wrapper.createEl("label", {
@@ -42,7 +46,7 @@ export class RadioGroupComponent {
 
 			const input = label.createEl("input", {
 				type: "radio",
-				attr: { key, value: key },
+				attr: { name: groupName, value: key },
 			});
 
 			if (key === this.currentValue) {
