@@ -5,6 +5,7 @@ import {
 	Formatter,
 	type FormatVariable,
 } from "./types";
+import { splitFrontmatter } from "./utils";
 
 export const DEFAULT_FORMATTER_KEY = "Default";
 
@@ -15,34 +16,12 @@ export class DefaultFormatter extends Formatter {
 	async formatTemplate(
 		note: TFile,
 		template: TFile,
-		vars: Record<string, FormatVariable>,
 		options: FormatOptions,
 	): Promise<FormatData> {
 		const templateContent =
 			await this.plugin.app.vault.cachedRead(template);
-		const formatted = format(templateContent, vars);
-
-		const splitter = "---";
-		const splitterLength = splitter.length;
-
-		if (!formatted.startsWith(splitter)) {
-			return { frontmatter: {}, content: formatted };
-		}
-
-		const endIndex = formatted.indexOf(splitter, splitterLength);
-		if (endIndex === -1) {
-			return { frontmatter: {}, content: formatted };
-		}
-
-		const frontmatterRaw = formatted
-			.substring(splitterLength, endIndex)
-			.trim();
-		const frontmatter = parseYaml(frontmatterRaw) as Record<string, any>;
-		const content = formatted
-			.substring(endIndex + splitterLength)
-			.trimStart();
-
-		return { frontmatter, content };
+		const formatted = format(templateContent, defaultVariables(note));
+		return splitFrontmatter(formatted);
 	}
 }
 
@@ -118,4 +97,12 @@ function splitFormat(expression: string) {
 		expression.slice(0, colonIndex).trim(),
 		expression.slice(colonIndex + 1).trim(),
 	] as const;
+}
+
+function defaultVariables(note?: TFile | null): Record<string, FormatVariable> {
+	return {
+		note,
+		now: moment(),
+		date: moment(),
+	};
 }

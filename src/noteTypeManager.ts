@@ -2,8 +2,8 @@ import { CachedMetadata, normalizePath, stringifyYaml, TFile } from "obsidian";
 import NoteTypePlugin from "./main";
 import { NoteTypeData } from "./settings";
 import { FormatData } from "./formatter";
-import { defaultVariables } from "./formatter/utils";
 import {
+	ContentOverwriteType,
 	defaultOverwriteTypeData,
 	OverwriteTypeData,
 	PropertyOverwriteType,
@@ -73,16 +73,9 @@ export class NoteTypeManager {
 			return {};
 		}
 
-		const formatter =
-			this.plugin.formatters.find((f) => f.key === noteType.formatter) ??
-			this.plugin.formatters[0];
+		const formatter = this.plugin.getFormatter(noteType.formatter);
 
-		return await formatter!.formatTemplate(
-			note,
-			template,
-			defaultVariables(note),
-			{},
-		);
+		return await formatter!.formatTemplate(note, template, {});
 	}
 
 	private async hasExistingContent(
@@ -115,7 +108,14 @@ export class NoteTypeManager {
 		overwriteType: OverwriteTypeData,
 	): Promise<void> {
 		const noteType = this.plugin.settings.types.find((t) => t.key === key);
-		const templateData = await this.formatTemplate(note, noteType);
+		let templateData;
+		try {
+			templateData = await this.formatTemplate(note, noteType);
+		} catch (e) {
+			new Notice(`Failed to format template: ${e}`);
+			console.error(e);
+			return;
+		}
 
 		const frontmatter = this.mergeFrontmatter(
 			noteFrontmatter,
@@ -124,23 +124,23 @@ export class NoteTypeManager {
 			key,
 		);
 
-		const noteContent = await this.plugin.app.vault.cachedRead(note);
-		const haveFrontmatter =
-			noteFrontmatter != null &&
-			Object.keys(noteFrontmatter).some(
-				(k) => k !== this.plugin.settings.propertyKey,
+		this.plugin.app.vault.process(note, (noteContent) => {
+			const haveFrontmatter =
+				noteFrontmatter != null &&
+				Object.keys(noteFrontmatter).some(
+					(k) => k !== this.plugin.settings.propertyKey,
+				);
+
+			const content = this.mergeContent(
+				noteContent,
+				noteCache,
+				haveFrontmatter,
+				templateData.content,
+				overwriteType.content,
 			);
 
-		const content = this.mergeContent(
-			noteContent,
-			noteCache,
-			haveFrontmatter,
-			templateData.content,
-			overwriteType.content,
-		);
-
-		const writeContent = `---\n${stringifyYaml(frontmatter)}\n---\n${content.trimStart()}`;
-		await this.plugin.app.vault.modify(note, writeContent);
+			return `---\n${stringifyYaml(frontmatter)}---\n${content}`;
+		});
 	}
 
 	private mergeFrontmatter(
@@ -152,7 +152,10 @@ export class NoteTypeManager {
 		let merged: Record<string, unknown>;
 
 		if (mode === "replace") {
-			merged = { ...templateFrontmatter };
+			merged =
+				templateFrontmatter == null
+					? {}
+					: structuredClone(templateFrontmatter);
 		} else {
 			merged =
 				noteFrontmatter == null ? {} : structuredClone(noteFrontmatter);
@@ -177,7 +180,7 @@ export class NoteTypeManager {
 		noteCache: CachedMetadata | null,
 		haveFrontmatter: boolean,
 		templateContent: string | undefined,
-		mode: OverwriteTypeData["content"],
+		mode: ContentOverwriteType,
 	): string {
 		if (mode === "replace") {
 			return templateContent ?? "";

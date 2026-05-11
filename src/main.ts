@@ -8,8 +8,7 @@ import {
 	patchMetadataEditor,
 	reloadMetadataEditor,
 } from "./patchMetadataEditor";
-import { Formatter } from "./formatter";
-import { DefaultFormatter } from "./formatter/defaultFormatter";
+import { DEFAULT_FORMATTER_KEY, Formatter, initFormatters } from "./formatter";
 import { NoteTypeManager } from "./noteTypeManager";
 
 export default class NoteTypePlugin extends Plugin {
@@ -19,13 +18,14 @@ export default class NoteTypePlugin extends Plugin {
 
 	saveSettings!: Debouncer<[], Promise<void>>;
 
-	formatters: Formatter[] = [new DefaultFormatter(this)];
+	formatters!: Formatter[];
 
 	manager!: NoteTypeManager;
 
 	async onload() {
 		await this.loadSettings();
 		this.saveSettings = debounce(this._saveSettings, 300);
+		this.formatters = initFormatters(this);
 
 		this.manager = new NoteTypeManager(this);
 
@@ -40,6 +40,14 @@ export default class NoteTypePlugin extends Plugin {
 
 	onunload() {
 		this.styleEl?.remove();
+	}
+
+	getFormatter(key?: string) {
+		key ??= DEFAULT_FORMATTER_KEY;
+		return (
+			this.formatters.find((f) => f.key === key) ??
+			this.formatters.find((f) => f.key === DEFAULT_FORMATTER_KEY)!
+		);
 	}
 
 	registerFormatter(formatter: Formatter): void {

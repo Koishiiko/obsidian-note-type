@@ -1,12 +1,21 @@
-import { TFile, moment } from "obsidian";
-import { FormatVariable } from "./types";
+import { parseYaml } from "obsidian";
 
-export function defaultVariables(
-	note?: TFile | null,
-): Record<string, FormatVariable> {
-	return {
-		note,
-		now: moment(),
-		date: moment(),
-	};
+export function splitFrontmatter(text: string) {
+	const splitter = "---";
+	const splitterLength = splitter.length;
+
+	if (!text.startsWith(splitter)) {
+		return { frontmatter: {}, content: text };
+	}
+
+	const endIndex = text.indexOf(splitter, splitterLength);
+	if (endIndex === -1) {
+		return { frontmatter: {}, content: text };
+	}
+
+	const frontmatterRaw = text.substring(splitterLength, endIndex).trim();
+	const frontmatter = parseYaml(frontmatterRaw) as Record<string, any>;
+	const content = text.substring(endIndex + splitterLength).trimStart();
+
+	return { frontmatter, content };
 }

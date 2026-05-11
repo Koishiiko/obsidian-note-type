@@ -14,14 +14,15 @@ export abstract class Formatter {
 	abstract formatTemplate(
 		note: TFile,
 		template: TFile,
-		vars: Record<string, FormatVariable>,
 		options: FormatOptions,
 	): Promise<FormatData>;
 }
 
 export type FormatVariable = unknown;
 
-export interface FormatOptions {}
+export interface FormatOptions {
+	// TODO
+}
 
 export interface FormatData {
 	frontmatter?: Record<string, unknown>;
