@@ -7,17 +7,21 @@ import {
 	PropertyOverwriteType,
 	propertyOverwriteTypes,
 } from "./components/overwriteConfirmModal";
+import { NO_TYPE_KEY } from "./patchMetadataEditor";
 
 export interface NoteTypePluginSettings {
 	propertyKey: string;
 	hideProperty: boolean;
-	alwaysShowProperties: boolean;
 
 	types: NoteTypeData[];
 
 	showConfictModal: boolean;
 	defaultPropertyOverwriteType: PropertyOverwriteType;
 	defaultContentOverwriteType: ContentOverwriteType;
+
+	enableDefaultNoteType: boolean;
+	emptyNoteOnly: boolean;
+	defaultNoteType: string;
 }
 
 export interface NoteTypeData {
@@ -30,13 +34,16 @@ export interface NoteTypeData {
 export const DEFAULT_SETTINGS: NoteTypePluginSettings = {
 	propertyKey: "noteType",
 	hideProperty: true,
-	alwaysShowProperties: true,
 
 	types: [],
 
 	showConfictModal: true,
 	defaultPropertyOverwriteType: "overwrite",
 	defaultContentOverwriteType: "replace",
+
+	enableDefaultNoteType: false,
+	emptyNoteOnly: true,
+	defaultNoteType: NO_TYPE_KEY,
 };
 
 export class NoteTypeSettingTab extends PluginSettingTab {
@@ -54,6 +61,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 
 		this.base();
 		this.overwrite();
+		this.defaultNoteType();
 		this.types();
 	}
 
@@ -62,7 +70,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 
 		group.addSetting((s) => {
 			s.setName("Property key")
-				.setDesc("The keys of note type property.")
+				.setDesc("Property key used to identify the note type.")
 				.addText((text) => {
 					text.setValue(this.plugin.settings.propertyKey);
 					text.inputEl.tabIndex = -1;
@@ -75,26 +83,13 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 		});
 
 		group.addSetting((s) => {
-			s.setName("Hide property")
-				.setDesc("Hide note type property.")
+			s.setName("Hide note type property")
+				.setDesc("Hide the note type property in the property editor.")
 				.addToggle((toggle) =>
 					toggle
 						.setValue(this.plugin.settings.hideProperty)
 						.onChange((value) => {
 							this.plugin.settings.hideProperty = value;
-							this.plugin.saveSettings();
-						}),
-				);
-		});
-
-		group.addSetting((s) => {
-			s.setName("Alway show properties")
-				.setDesc("Show properties editor when peropety count is 0.")
-				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.alwaysShowProperties)
-						.onChange((value) => {
-							this.plugin.settings.alwaysShowProperties = value;
 							this.plugin.saveSettings();
 						}),
 				);
@@ -107,7 +102,9 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 
 		group.addSetting((s) => {
 			s.setName("Show conflict modal")
-				.setDesc("Weather show conflict modal when toggle note type.")
+				.setDesc(
+					"Prompt for overwrite options when changing note type.",
+				)
 				.addToggle((toggle) =>
 					toggle
 						.setValue(this.plugin.settings.showConfictModal)
@@ -119,12 +116,10 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 		});
 
 		group.addSetting((s) => {
-			s.setName("Default overwrite property behavior")
-				.setDesc(
-					"Default behavior for how template's properties are applied.",
-				)
-				.addDropdown((toggle) =>
-					toggle
+			s.setName("Default property behavior")
+				.setDesc("How template properties are applied by default.")
+				.addDropdown((d) =>
+					d
 						.addOptions(propertyOverwriteTypes)
 						.setValue(
 							this.plugin.settings.defaultPropertyOverwriteType,
@@ -138,12 +133,10 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 		});
 
 		group.addSetting((s) => {
-			s.setName("Default overwrite content behavior")
-				.setDesc(
-					"Default behavior for how the template's content are filled.",
-				)
-				.addDropdown((toggle) =>
-					toggle
+			s.setName("Default content behavior")
+				.setDesc("How template content is filled by default.")
+				.addDropdown((d) =>
+					d
 						.addOptions(contentOverwriteTypes)
 						.setValue(
 							this.plugin.settings.defaultContentOverwriteType,
@@ -154,6 +147,61 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 							this.plugin.saveSettings();
 						}),
 				);
+		});
+	}
+
+	defaultNoteType() {
+		const group = new SettingGroup(this.containerEl);
+		group.setHeading("Default note type");
+
+		group.addSetting((s) => {
+			s.setName("Enable default note type")
+				.setDesc(
+					"Automatically apply the default note type when a file that does no have note type is opened.",
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.enableDefaultNoteType)
+						.onChange((value) => {
+							this.plugin.settings.enableDefaultNoteType = value;
+							this.plugin.saveSettings();
+						}),
+				);
+		});
+
+		group.addSetting((s) => {
+			s.setName("Empty note only")
+				.setDesc("Only apply the note type to empty notes.")
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.emptyNoteOnly)
+						.onChange((value) => {
+							this.plugin.settings.emptyNoteOnly = value;
+							this.plugin.saveSettings();
+						}),
+				);
+		});
+
+		group.addSetting((s) => {
+			s.setName("Default note type")
+				.setDesc("The note type to apply when none is set.")
+				.addDropdown((d) => {
+					d.addOptions(
+						this.plugin.settings.types.reduce(
+							(result, current) => {
+								result[current.key] = current.name;
+								return result;
+							},
+							{} as Record<string, string>,
+						),
+					)
+						.setValue(
+							this.plugin.settings.defaultNoteType ?? NO_TYPE_KEY,
+						)
+						.onChange((value) => {
+							this.plugin.settings.defaultNoteType = value;
+						});
+				});
 		});
 	}
 

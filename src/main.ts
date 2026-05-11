@@ -35,7 +35,10 @@ export default class NoteTypePlugin extends Plugin {
 			patchMetadataEditor(this);
 
 			this.registerEvent(
-				this.app.workspace.on("file-open", this.addNoteTypeProperty),
+				this.app.workspace.on(
+					"file-open",
+					this.addNoteTypeProperty.bind(this),
+				),
 			);
 		});
 
@@ -46,8 +49,35 @@ export default class NoteTypePlugin extends Plugin {
 		this.styleEl?.remove();
 	}
 
-	addNoteTypeProperty(file: TFile | null) {
-    }
+	async addNoteTypeProperty(file: TFile | null) {
+		if (!this.settings.enableDefaultNoteType) {
+			return;
+		}
+
+		if (file == null || file.extension !== "md") {
+			return;
+		}
+
+		// XXX: waiting other plugin processed when the file is created
+		await new Promise<void>((reslove) => setTimeout(() => reslove(), 50));
+
+		const cache = this.app.metadataCache.getFileCache(file);
+		if (cache?.frontmatter?.[this.settings.propertyKey] != null) {
+			return;
+		}
+
+		if (this.settings.emptyNoteOnly && file.stat.size > 0) {
+			return;
+		}
+
+		this.app.fileManager.processFrontMatter(
+			file,
+			(frontmatter: Record<string, unknown>) => {
+				frontmatter[this.settings.propertyKey] =
+					this.settings.defaultNoteType;
+			},
+		);
+	}
 
 	getFormatter(key?: string) {
 		key ??= DEFAULT_FORMATTER_KEY;
@@ -85,14 +115,10 @@ export default class NoteTypePlugin extends Plugin {
 	updateStyle() {
 		const styles: string[] = [];
 
-		if (this.settings.alwaysShowProperties) {
-			styles.push(
-				`.metadata-container.note-type-metadata-container[data-property-count="0"] { display: block; }`,
-			);
-		}
-
 		if (this.settings.hideProperty) {
-			const escapedKey = CSS.escape(this.settings.propertyKey);
+			const escapedKey = CSS.escape(
+				this.settings.propertyKey,
+			).toLowerCase();
 			styles.push(
 				`.metadata-property[data-property-key="${escapedKey}"] { display: none; }`,
 			);
