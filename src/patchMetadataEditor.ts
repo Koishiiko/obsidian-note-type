@@ -31,6 +31,14 @@ export function patchMetadataEditor(plugin: NoteTypePlugin) {
 				updateSelector(plugin, that, data);
 			});
 		},
+		onunload(old) {
+			return dedupe(MONKEY_AROUND_KEY, old, function () {
+				// @ts-expect-error
+				const that = this as PatchedMetadataEditor;
+				old.call(that);
+				that.noteTypeDropdown?.destroy();
+			});
+		},
 	});
 
 	reloadMetadataEditor(plugin);
@@ -67,6 +75,7 @@ function createNoteTypeSelectorEl(
 	editor: PatchedMetadataEditor,
 ) {
 	if (editor.noteTypeSelectorContainer != null) {
+		editor.noteTypeDropdown?.destroy();
 		editor.noteTypeSelectorContainer.remove();
 	}
 

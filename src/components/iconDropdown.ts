@@ -20,6 +20,23 @@ export class IconDropdown {
 	options: IconDropdownOption[] = [];
 
 	isOpen = false;
+	private destroyed = false;
+
+	private onTriggerClick = (e: MouseEvent) => {
+		e.stopPropagation();
+		e.preventDefault();
+		this.toggle();
+	};
+
+	private onDocumentClick = (e: MouseEvent) => {
+		if (
+			this.isOpen &&
+			!this.containerEl.contains(e.target as Node) &&
+			!this.menuEl.contains(e.target as Node)
+		) {
+			this.close();
+		}
+	};
 
 	constructor(containerEl: HTMLElement, defaultValue = "") {
 		this.parentEl = containerEl;
@@ -34,17 +51,19 @@ export class IconDropdown {
 		this.menuEl = this.containerEl.createDiv({ cls: "icon-dropdown-menu" });
 		this.menuEl.style.display = "none";
 
-		this.triggerEl.addEventListener("click", (e: MouseEvent) => {
-			e.stopPropagation();
-			e.preventDefault();
-			this.toggle();
-		});
+		this.triggerEl.addEventListener("click", this.onTriggerClick);
+		document.addEventListener("click", this.onDocumentClick);
+	}
 
-		document.addEventListener("click", (e: MouseEvent) => {
-			if (this.isOpen && !this.containerEl.contains(e.target as Node)) {
-				this.close();
-			}
-		});
+	destroy() {
+		if (this.destroyed) {
+			return;
+		}
+		this.destroyed = true;
+		this.close();
+		this.triggerEl.removeEventListener("click", this.onTriggerClick);
+		document.removeEventListener("click", this.onDocumentClick);
+		this.containerEl.remove();
 	}
 
 	getValue() {
@@ -100,6 +119,8 @@ export class IconDropdown {
 
 	private open() {
 		this.isOpen = true;
+		document.body.appendChild(this.menuEl);
+		this.positionMenu();
 		this.menuEl.style.display = "block";
 		this.containerEl.addClass("is-open");
 	}
@@ -108,6 +129,15 @@ export class IconDropdown {
 		this.isOpen = false;
 		this.menuEl.style.display = "none";
 		this.containerEl.removeClass("is-open");
+		this.containerEl.appendChild(this.menuEl);
+	}
+
+	private positionMenu() {
+		const triggerRect = this.triggerEl.getBoundingClientRect();
+		this.menuEl.style.position = "fixed";
+		this.menuEl.style.top = `${triggerRect.bottom + 4}px`;
+		this.menuEl.style.left = `${triggerRect.left}px`;
+		this.menuEl.style.width = `${triggerRect.width}px`;
 	}
 
 	private findSelectedOption(): IconDropdownOption | undefined {

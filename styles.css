@@ -1,5 +1,6 @@
 /* always show metadata editor */
-.metadata-container.note-type-metadata-container[data-property-count="0"] {
+.markdown-source-view.is-live-preview.show-properties
+	.metadata-container.note-type-metadata-container[data-property-count="0"] {
 	display: block;
 }
 
@@ -56,17 +57,15 @@
 
 .icon-dropdown-menu {
 	display: none;
-	position: absolute;
-	top: 100%;
-	left: 0;
-	right: 0;
-	margin-top: 4px;
+	position: fixed;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
 	background: var(--background-primary);
-	z-index: 1000;
+	z-index: 99999;
 	overflow-y: auto;
+	max-height: 240px;
 	padding: 4px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .icon-dropdown-menu.is-open {
