@@ -1,4 +1,4 @@
-import { TFile, moment, parseYaml } from "obsidian";
+import { TFile, moment } from "obsidian";
 import {
 	FormatData,
 	FormatOptions,
@@ -43,9 +43,8 @@ function resolvePlaceholder(
 	variables: Record<string, FormatVariable>,
 ): string {
 	const expression = rawExpression.trim();
-	const dotIndex = expression.indexOf(".");
 
-	if (dotIndex >= 0) {
+	if (!isDateFormat(expression, variables)) {
 		return executeExpression(expression, variables);
 	}
 
@@ -63,28 +62,39 @@ function resolvePlaceholder(
 	return String(value);
 }
 
+function isDateFormat(
+	expression: string,
+	variables: Record<string, FormatVariable>,
+) {
+	const colonIndex = expression.indexOf(":");
+	if (colonIndex === -1) {
+		return false;
+	}
+
+	const left = expression.split(":")[0]?.toLocaleLowerCase();
+	return left != null && moment.isMoment(variables[left]);
+}
+
 function executeExpression(
 	expression: string,
 	variables: Record<string, FormatVariable>,
-): string {
-	const segments = expression.split(".").map((s) => s.trim());
-
-	const rootKey = segments[0]!.toLowerCase();
-	let value: unknown = variables[rootKey];
-
-	if (value == null) {
-		return `{{${rootKey} - NULL}}`;
+) {
+	try {
+		const keys = Object.keys(variables);
+		const evaluator = new Function(
+			"moment",
+			...keys,
+			`return ${expression};`,
+		);
+		const evalResult = evaluator(moment, ...keys.map((k) => variables[k]));
+		return String(evalResult ?? "");
+	} catch (ex) {
+		console.error(
+			`[Note type] Failed to execute expression: ${expression}`,
+			ex,
+		);
+		return `{{${expression} - ${ex}}}`;
 	}
-
-	for (let i = 1; i < segments.length; i++) {
-		const prop = segments[i]!;
-		if (prop === "" || value == null || typeof value !== "object") {
-			return `{{${expression} - ERROR}}`;
-		}
-		value = (value as Record<string, unknown>)[prop];
-	}
-
-	return String(value ?? "");
 }
 
 function splitFormat(expression: string) {
