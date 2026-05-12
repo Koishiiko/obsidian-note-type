@@ -115,7 +115,7 @@ export class NoteTypeModal extends Modal {
 				.addText((t) =>
 					t
 						.setValue(data.icon ?? "")
-						.onChange((value) => (data.name = value)),
+						.onChange((value) => (data.icon = value)),
 				),
 		);
 

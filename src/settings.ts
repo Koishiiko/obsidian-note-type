@@ -38,6 +38,7 @@ export interface NoteTypeData {
 	color?: string;
 	template?: string;
 	formatter?: string;
+	disabled?: boolean;
 }
 
 export const DEFAULT_SETTINGS: NoteTypePluginSettings = {
@@ -322,6 +323,15 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 								types.splice(index, 1);
 								this.plugin.saveSettings();
 								this.display();
+							}),
+					)
+					.addToggle((t) =>
+						t
+							.setTooltip("Enabled")
+							.setValue(!item.disabled)
+							.onChange((value) => {
+								item.disabled = !value;
+								this.plugin.saveSettings();
 							}),
 					),
 			);

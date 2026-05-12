@@ -117,7 +117,7 @@ function initNoteTypeSelector(
 
 	const options = [
 		{ key: NO_TYPE_KEY, name: "None" },
-		...plugin.settings.types,
+		...plugin.settings.types.filter((t) => !t.disabled),
 	];
 
 	dropdown.addOptions(options);
