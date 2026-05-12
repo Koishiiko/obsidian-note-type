@@ -35,7 +35,7 @@ export interface NoteTypeData {
 	key: string;
 	name: string;
 	icon?: string;
-	iconColor?: string;
+	color?: string;
 	template?: string;
 	formatter?: string;
 }
@@ -250,8 +250,8 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 							const containerEl = f.createDiv({
 								cls: "setting-note-type-name-label",
 							});
+							containerEl.style.color = item.color ?? "";
 							const iconEl = containerEl.createSpan();
-							iconEl.style.color = item.iconColor ?? "";
 							setIcon(iconEl, item.icon ?? DEFAULT_ICON);
 							containerEl.createSpan({ text: item.name });
 						}),

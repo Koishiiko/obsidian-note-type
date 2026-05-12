@@ -121,11 +121,12 @@ export class NoteTypeModal extends Modal {
 
 		group.addSetting((s) =>
 			s
-				.setName("Icon color")
+				.setName("Color")
+				.setDesc("Color of the icon and name")
 				.addColorPicker((p) =>
 					p
-						.setValue(data.iconColor ?? "")
-						.onChange((value) => (data.iconColor = value)),
+						.setValue(data.color ?? "")
+						.onChange((value) => (data.color = value)),
 				),
 		);
 

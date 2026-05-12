@@ -4,7 +4,7 @@ export interface IconDropdownOption {
 	key: string;
 	name: string;
 	icon?: string;
-	iconColor?: string;
+	color?: string;
 }
 
 export const DEFAULT_ICON = "book";
@@ -147,11 +147,12 @@ export class IconDropdown {
 	private renderTrigger() {
 		this.triggerEl.empty();
 		const selected = this.findSelectedOption();
+		this.triggerEl.style.color = selected?.color ?? "";
 
 		const iconEl = this.triggerEl.createSpan({
 			cls: "icon-dropdown-trigger-icon",
 		});
-		iconEl.style.color = selected?.iconColor ?? "";
+
 		setIcon(iconEl, selected?.icon ?? DEFAULT_ICON);
 
 		this.triggerEl.createSpan({
@@ -170,9 +171,10 @@ export class IconDropdown {
 			itemEl.addClass("is-selected");
 		}
 
+		itemEl.style.color = option.color ?? "";
+
 		const iconEl = itemEl.createSpan({ cls: "icon-dropdown-item-icon" });
 		setIcon(iconEl, option.icon ?? DEFAULT_ICON);
-		iconEl.style.color = option.iconColor ?? "";
 
 		itemEl.createSpan({
 			cls: "icon-dropdown-item-text",
