@@ -54,6 +54,10 @@ export function reloadMetadataEditor(plugin: NoteTypePlugin) {
 	});
 }
 
+export function setNoteType(editor: MetadataEditor, key: string) {
+	(editor as PatchedMetadataEditor).noteTypeDropdown!.setValue(key);
+}
+
 function resolveMetadataEditorPrototype(plugin: NoteTypePlugin) {
 	const { workspace, viewRegistry } = plugin.app;
 	const leaf = workspace.getLeaf("tab");
@@ -112,7 +116,7 @@ function initNoteTypeSelector(
 	});
 
 	const options = [
-		{ key: NO_TYPE_KEY, name: "No type" },
+		{ key: NO_TYPE_KEY, name: "None" },
 		...plugin.settings.types,
 	];
 

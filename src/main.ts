@@ -7,6 +7,7 @@ import {
 import {
 	patchMetadataEditor,
 	reloadMetadataEditor,
+	setNoteType,
 } from "./patchMetadataEditor";
 import { DEFAULT_FORMATTER_KEY, Formatter, initFormatters } from "./formatter";
 import { NoteTypeManager } from "./noteTypeManager";
@@ -59,7 +60,7 @@ export default class NoteTypePlugin extends Plugin {
 		}
 
 		// XXX: waiting other plugin processed when the file is created
-		await new Promise<void>((reslove) => setTimeout(() => reslove(), 50));
+		await new Promise<void>((reslove) => setTimeout(() => reslove(), 100));
 
 		const cache = this.app.metadataCache.getFileCache(file);
 		if (cache?.frontmatter?.[this.settings.propertyKey] != null) {
@@ -70,12 +71,9 @@ export default class NoteTypePlugin extends Plugin {
 			return;
 		}
 
-		this.app.fileManager.processFrontMatter(
-			file,
-			(frontmatter: Record<string, unknown>) => {
-				frontmatter[this.settings.propertyKey] =
-					this.settings.defaultNoteType;
-			},
+		setNoteType(
+			this.app.workspace.activeEditor!.metadataEditor!,
+			this.settings.defaultNoteType,
 		);
 	}
 

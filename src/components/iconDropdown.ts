@@ -71,6 +71,7 @@ export class IconDropdown {
 	}
 
 	setValue(value: string) {
+		const isChange = this.value !== value;
 		this.value = value;
 		this.renderTrigger();
 		const items = this.menuEl.querySelectorAll<HTMLElement>(
@@ -79,6 +80,10 @@ export class IconDropdown {
 		items.forEach((item) => {
 			item.toggleClass("is-selected", item.dataset.key === value);
 		});
+
+		if (isChange) {
+			this.changeCallback?.(value as string);
+		}
 	}
 
 	onChange(callback: (value: string) => any) {
