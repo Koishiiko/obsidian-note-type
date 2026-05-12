@@ -1,4 +1,10 @@
-import { CachedMetadata, normalizePath, stringifyYaml, TFile } from "obsidian";
+import {
+	CachedMetadata,
+	MarkdownView,
+	normalizePath,
+	stringifyYaml,
+	TFile,
+} from "obsidian";
 import NoteTypePlugin from "./main";
 import { NoteTypeData } from "./settings";
 import { FormatData } from "./formatter";
@@ -71,6 +77,28 @@ export class NoteTypeManager {
 				overwriteType,
 			);
 		}
+
+		// BUG: editor will auto scroll to bottom when filled the content
+		if (this.plugin.app.workspace.activeEditor?.file === note) {
+			this.scrollToTop();
+		}
+	}
+
+	scrollToTop() {
+		const editor = this.plugin.app.workspace.activeEditor;
+		const off = this.plugin.app.vault.on("modify", (file) => {
+			if (file !== editor?.file) {
+				return;
+			}
+
+			// XXX
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					editor.editor!.scrollTo(0, 0);
+				});
+			});
+			this.plugin.app.vault.offref(off);
+		});
 	}
 
 	async formatTemplate(
