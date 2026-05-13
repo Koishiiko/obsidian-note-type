@@ -1,4 +1,5 @@
-import { TFile, moment } from "obsidian";
+import { TFile } from "obsidian";
+import moment from "moment";
 import {
 	FormatData,
 	FormatOptions,

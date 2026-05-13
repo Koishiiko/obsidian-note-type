@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-note-type",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Assign type to your notes and quickly switch between them.",
 	"main": "main.js",
 	"type": "module",
@@ -25,6 +25,7 @@
 		"typescript-eslint": "8.59.2"
 	},
 	"dependencies": {
+		"moment": "^2.30.1",
 		"monkey-around": "^3.0.0",
 		"obsidian": "1.12.3"
 	},
