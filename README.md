@@ -46,27 +46,28 @@ Define your note types here. Each note type has the following options:
 
 ##### Default (Built-in)
 
-Uses `{{ expression }}` syntax with single-line JavaScript expressions. The following variables are available:
+Uses `{{ variable }}` or `{{ date:format }}` syntax with variable. The following variables are available:
 
-- **`moment`**: [moment.js](https://momentjs.com/docs) for date manipulation.
+- **now** / **date**: Alias for `moment().format()`. see: https://momentjs.com/docs
     ```js
-    {{ moment().format('YYYY-MM-DD hh:mm:ss') }}
-    ```
-- **`now`** / **`date`**: Alias for `moment()`.
-    ```js
-    // same as `moment().format('YYYY-MM-DD')`
+    {{ now }} // default: YYYY-MM-DD hh:mm:ss
     {{ now:YYYY-MM-DD }}
-    {{ now.add(7, 'days').format('YYYY-MM-DD') }}
     ```
-- **`note`**: The current note as a [TFile](https://docs.obsidian.md/Reference/TypeScript+API/TFile).
+- **ctime** / **mtime**: create time / modify time of current note
     ```js
-    {{ note.basename }}
-    {{ moment(note.stat.ctime).format('YYYY-MM-DD') }}
+    {{ ctime }} // default: YYYY-MM-DD hh:mm:ss
+    {{ mtime:YYYY-MM-DD }}
+    ```
+- **name** / **ext** / **fullname**: name of current note.
+    ```js
+    {{ fullname }} // foo.md
+    {{ name }} // name
+    {{ ext }} // md
     ```
 
 ##### Templater
 
-See: [Templater document](https://silentvoid13.github.io/Templater)
+More complex templates can be implemented using the **Templater** plugin, see: [Templater document](https://silentvoid13.github.io/Templater)
 
 ### Overwrite Behavior
 
