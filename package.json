@@ -1,6 +1,6 @@
 {
     "name": "obsidian-note-type",
-    "version": "0.1.1",
+    "version": "0.1.3",
     "description": "Assign type to your notes and quickly switch between them.",
     "main": "main.js",
     "type": "module",

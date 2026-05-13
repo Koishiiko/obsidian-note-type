@@ -1,7 +1,7 @@
 {
     "id": "note-type",
     "name": "Note Type",
-    "version": "0.1.1",
+    "version": "0.1.3",
     "minAppVersion": "1.12.7",
     "description": "Assign type to your notes and quickly switch between them.",
     "author": "ste",
