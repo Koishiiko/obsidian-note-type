@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-note-type",
 	"version": "0.1.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Assign type to your notes and quickly switch between them.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
@@ -11,7 +11,7 @@
 		"lint": "eslint ."
 	},
 	"keywords": [],
-	"license": "0-BSD",
+	"license": "MIT",
 	"devDependencies": {
 		"@eslint/js": "10.0.1",
 		"@types/node": "^25.6.2",
@@ -27,5 +27,6 @@
 	"dependencies": {
 		"monkey-around": "^3.0.0",
 		"obsidian": "1.12.3"
-	}
+	},
+	"packageManager": "pnpm@11.0.9"
 }

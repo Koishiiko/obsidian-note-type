@@ -3,7 +3,7 @@
 	"name": "Note Type",
 	"version": "0.1.0",
 	"minAppVersion": "1.12.7",
-	"description": "Bunlde properties for a note type.",
+	"description": "Assign type to your notes and quickly switch between them.",
     "author": "ste",
     "authorUrl": "https://github.com/Koishiiko",
     "isDesktopOnly": false

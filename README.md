@@ -1,90 +1,96 @@
-# Obsidian Sample Plugin
+# Obsidian Note Type
 
-This is a sample plugin for Obsidian (https://obsidian.md).
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## Features
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+- Adds a **Note Type** dropdown in the Properties editor to change the current note's type.
+- Switching a note type populates properties and content from a template (supports built-in syntax and [Templater](https://github.com/SilentVoid13/Templater)).
+- Default note type: automatically apply a note type to new files.
 
-## First time developing plugins?
+This plugin is heavily inspired by the latest update of [Octarine](https://octarine.app/changelog/0.42.0) (v0.42). Essentially, it just changes the Templater/QuickAdd template-filling workflow (`Run command -> Choose template`) into a dropdown-based switcher, but in my personal opinion, it greatly improves the user experience. Huge thanks to Octarine for the idea!
 
-Quick starting guide for new plugin devs:
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## Getting Started
 
-## Releasing new releases
+1. Install the plugin.
+2. Add your **Note Types** (see configuration details below).
+3. Open any note — use the dropdown at the top of the Properties editor to switch note types.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+### How It Works
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+The plugin does not introduce new note syntax, just binds a configurable property key (default: `noteType`) to represent the note type. A dropdown is displayed in the Properties editor listing all predefined note types. When a type is selected, the corresponding template is formatted and applied, both properties (frontmatter) and body content are populated.
 
-## Adding your plugin to the community plugin list
+## Configuration
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+### Base Settings
 
-## How to use
+| Setting                     | Description                                                                         |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| **Property key**            | The frontmatter property key used to identify the note type (default: `noteType`).  |
+| **Hide note type property** | When enabled, the raw property input is hidden — only the styled dropdown is shown. |
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+### Note Types
 
-## Manually installing the plugin
+Define your note types here. Each note type has the following options:
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+| Field         | Description                                                                |
+| ------------- | -------------------------------------------------------------------------- |
+| **Key**       | Unique identifier written to the configured property key.                  |
+| **Name**      | Display name shown in the dropdown.                                        |
+| **Icon**      | Icon from [Lucide](https://lucide.dev/icons) displayed alongside the name. |
+| **Color**     | Color applied to the icon and name in the dropdown.                        |
+| **Template**  | Path to the template file used when this note type is selected.            |
+| **Formatter** | The engine used to process the template (see below).                       |
 
-## Improve code quality with eslint
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+#### Formatters
 
-## Funding URL
+##### Default (Built-in)
 
-You can include funding URLs where people who use your plugin can financially support it.
+Uses `{{ expression }}` syntax with single-line JavaScript expressions. The following variables are available:
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+- **`moment`**: [moment.js](https://momentjs.com/docs) for date manipulation.
+    ```js
+    {{ moment().format('YYYY-MM-DD hh:mm:ss') }}
+    ```
+- **`now`** / **`date`**: Alias for `moment()`.
+    ```js
+    // same as `moment().format('YYYY-MM-DD')`
+    {{ now:YYYY-MM-DD }}
+    {{ now.add(7, 'days').format('YYYY-MM-DD') }}
+    ```
+- **`note`**: The current note as a [TFile](https://docs.obsidian.md/Reference/TypeScript+API/TFile).
+    ```js
+    {{ note.basename }}
+    {{ moment(note.stat.ctime).format('YYYY-MM-DD') }}
+    ```
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+##### Templater
 
-If you have multiple URLs, you can also do:
+See: [Templater document](https://silentvoid13.github.io/Templater)
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+### Overwrite Behavior
 
-## API Documentation
+When a note already has content, you can control how templates are applied. If **Show conflict modal** is enabled, you will be prompted to choose the behavior each time a conflict occurs. Otherwise, the default settings are used.
 
-See https://docs.obsidian.md
+#### Property Behavior
+
+| Option        | Description                                                                    |
+| ------------- | ------------------------------------------------------------------------------ |
+| **Replace**   | Replace all properties with the template's properties.                         |
+| **Keep**      | Keep existing properties, skip conflicting ones from the template.             |
+| **Overwrite** | Keep existing properties, but overwrite those that conflict with the template. |
+
+#### Content Behavior
+
+| Option      | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| **Replace** | Replace with the template's content.                 |
+| **Keep**    | Preserve the existing note content (do not replace). |
+
+### Default Note Type
+
+| Setting                      | Description                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Enable default note type** | When a file without a note type is opened, automatically assign the default note type and apply its template. |
+| **Default note type**        | The note type to use as the default.                                                                          |
+| **Empty note only**          | Only apply the note type to empty files.                                                                      |
