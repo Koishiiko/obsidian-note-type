@@ -1,4 +1,4 @@
-import { AbstractInputSuggest, App, TAbstractFile, TFile } from "obsidian";
+import { AbstractInputSuggest, App, TAbstractFile } from "obsidian";
 
 export class FileSuggester extends AbstractInputSuggest<TAbstractFile> {
 	el: HTMLInputElement;
@@ -48,10 +48,7 @@ export class FileSuggester extends AbstractInputSuggest<TAbstractFile> {
 		el.createSpan({ text: value.path });
 	}
 
-	override selectSuggestion(
-		value: TAbstractFile,
-		e: MouseEvent | KeyboardEvent,
-	): void {
+	override selectSuggestion(value: TAbstractFile): void {
 		this.el.value = value.path;
 		this.el.trigger("input");
 		this.close();

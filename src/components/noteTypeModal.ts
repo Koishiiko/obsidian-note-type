@@ -1,4 +1,4 @@
-import { Modal, Setting, SettingGroup } from "obsidian";
+import { Modal, Setting, SettingGroup,  } from "obsidian";
 import { NoteTypeData } from "../settings";
 import NoteTypePlugin from "../main";
 import { FileSuggester } from "./fileSuggester";
@@ -49,7 +49,7 @@ export class NoteTypeModal extends Modal {
 				btn
 					.setButtonText("Confirm")
 					.setCta()
-					.onClick(async () => {
+					.onClick(() => {
 						if (this.props.onSubmit) {
 							const result = this.props.onSubmit(
 								this.props.data!,
@@ -105,11 +105,11 @@ export class NoteTypeModal extends Modal {
 				.setName("Icon")
 				.setDesc(
 					createFragment((f) => {
-						(f.createSpan({ text: "See: " }),
-							f.createEl("a", {
-								text: "Lucide icon",
-								href: "https://lucide.dev/icons",
-							}));
+						f.createSpan({ text: "See: " });
+						f.createEl("a", {
+							text: "Lucide icon",
+							href: "https://lucide.dev/icons",
+						});
 					}),
 				)
 				.addText((t) =>

@@ -15,7 +15,7 @@ export class IconDropdown {
 	triggerEl: HTMLElement;
 	menuEl: HTMLElement;
 	value: string;
-	changeCallback?: (value: string) => any;
+	changeCallback?: (value: string) => void;
 
 	options: IconDropdownOption[] = [];
 
@@ -49,10 +49,9 @@ export class IconDropdown {
 		this.renderTrigger();
 
 		this.menuEl = this.containerEl.createDiv({ cls: "icon-dropdown-menu" });
-		this.menuEl.style.display = "none";
 
 		this.triggerEl.addEventListener("click", this.onTriggerClick);
-		document.addEventListener("click", this.onDocumentClick);
+		activeDocument.addEventListener("click", this.onDocumentClick);
 	}
 
 	destroy() {
@@ -62,7 +61,7 @@ export class IconDropdown {
 		this.destroyed = true;
 		this.close();
 		this.triggerEl.removeEventListener("click", this.onTriggerClick);
-		document.removeEventListener("click", this.onDocumentClick);
+		activeDocument.removeEventListener("click", this.onDocumentClick);
 		this.containerEl.remove();
 	}
 
@@ -82,11 +81,11 @@ export class IconDropdown {
 		});
 
 		if (isChange) {
-			this.changeCallback?.(value as string);
+			this.changeCallback?.(value);
 		}
 	}
 
-	onChange(callback: (value: string) => any) {
+	onChange(callback: (value: string) => void) {
 		this.changeCallback = callback;
 	}
 
@@ -124,22 +123,21 @@ export class IconDropdown {
 
 	private open() {
 		this.isOpen = true;
-		document.body.appendChild(this.menuEl);
+		activeDocument.body.appendChild(this.menuEl);
 		this.positionMenu();
-		this.menuEl.style.display = "block";
+		this.menuEl.addClass("is-open");
 		this.containerEl.addClass("is-open");
 	}
 
 	private close() {
 		this.isOpen = false;
-		this.menuEl.style.display = "none";
+		this.menuEl.removeClass("is-open");
 		this.containerEl.removeClass("is-open");
 		this.containerEl.appendChild(this.menuEl);
 	}
 
 	private positionMenu() {
 		const triggerRect = this.triggerEl.getBoundingClientRect();
-		this.menuEl.style.position = "fixed";
 		this.menuEl.style.top = `${triggerRect.bottom + 4}px`;
 		this.menuEl.style.left = `${triggerRect.left}px`;
 		this.menuEl.style.width = `${triggerRect.width}px`;

@@ -10,7 +10,7 @@ export class TemplaterFormatter extends Formatter {
 	async formatTemplate(
 		note: TFile,
 		template: TFile,
-		options: FormatOptions,
+		_options: FormatOptions,
 	): Promise<FormatData> {
 		const templater = getTemplater(this.plugin.app);
 

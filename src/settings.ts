@@ -4,6 +4,7 @@ import {
 	PluginSettingTab,
 	setIcon,
 	SettingGroup,
+	Notice,
 } from "obsidian";
 import NoteTypePlugin from "./main";
 import { NoteTypeModal } from "./components/noteTypeModal";
@@ -84,10 +85,10 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 				.addText((text) => {
 					text.setValue(this.plugin.settings.propertyKey);
 					text.inputEl.tabIndex = -1;
-					text.inputEl.addEventListener("blur", (e) => {
+					text.inputEl.addEventListener("blur", () => {
 						this.plugin.settings.propertyKey =
 							text.inputEl.value.trim();
-						this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 					});
 				});
 		});
@@ -100,7 +101,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.hideProperty)
 						.onChange((value) => {
 							this.plugin.settings.hideProperty = value;
-							this.plugin.saveSettings();
+							void this.plugin.saveSettings();
 						}),
 				);
 		});
@@ -120,7 +121,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.showConfictModal)
 						.onChange((value) => {
 							this.plugin.settings.showConfictModal = value;
-							this.plugin.saveSettings();
+							void this.plugin.saveSettings();
 						}),
 				);
 		});
@@ -137,7 +138,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 						.onChange((value) => {
 							this.plugin.settings.defaultPropertyOverwriteType =
 								value as PropertyOverwriteType;
-							this.plugin.saveSettings();
+							void this.plugin.saveSettings();
 						}),
 				);
 		});
@@ -154,7 +155,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 						.onChange((value) => {
 							this.plugin.settings.defaultContentOverwriteType =
 								value as ContentOverwriteType;
-							this.plugin.saveSettings();
+							void this.plugin.saveSettings();
 						}),
 				);
 		});
@@ -174,7 +175,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.enableDefaultNoteType)
 						.onChange((value) => {
 							this.plugin.settings.enableDefaultNoteType = value;
-							this.plugin.saveSettings();
+							void this.plugin.saveSettings();
 						}),
 				);
 		});
@@ -187,7 +188,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.emptyNoteOnly)
 						.onChange((value) => {
 							this.plugin.settings.emptyNoteOnly = value;
-							this.plugin.saveSettings();
+							void this.plugin.saveSettings();
 						}),
 				);
 		});
@@ -222,7 +223,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 			b.setIcon("");
 			const button = new ButtonComponent(b.extraSettingsEl);
 			button
-				.setButtonText("+ New")
+				.setButtonText("New")
 				.setCta()
 				.onClick(async () => {
 					const data = await this.showModal();
@@ -268,7 +269,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 									types[index - 1] = types[index]!;
 									types[index] = temp;
 								}
-								this.plugin.saveSettings();
+								void this.plugin.saveSettings();
 								this.display();
 							}),
 					)
@@ -282,7 +283,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 									const temp = types[index + 1]!;
 									types[index + 1] = types[index]!;
 									types[index] = temp;
-									this.plugin.saveSettings();
+									void this.plugin.saveSettings();
 									this.display();
 								}
 							}),
@@ -321,7 +322,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 							.setTooltip("Delete")
 							.onClick(() => {
 								types.splice(index, 1);
-								this.plugin.saveSettings();
+								void this.plugin.saveSettings();
 								this.display();
 							}),
 					)
@@ -331,7 +332,7 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 							.setValue(!item.disabled)
 							.onChange((value) => {
 								item.disabled = !value;
-								this.plugin.saveSettings();
+								void this.plugin.saveSettings();
 							}),
 					),
 			);

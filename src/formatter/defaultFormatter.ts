@@ -1,5 +1,4 @@
-import { TFile } from "obsidian";
-import moment from "moment";
+import { TFile, moment } from "obsidian";
 import {
 	FormatData,
 	FormatOptions,
@@ -17,7 +16,7 @@ export class DefaultFormatter extends Formatter {
 	async formatTemplate(
 		note: TFile,
 		template: TFile,
-		options: FormatOptions,
+		_options: FormatOptions,
 	): Promise<FormatData> {
 		const templateContent =
 			await this.plugin.app.vault.cachedRead(template);
@@ -60,7 +59,7 @@ function resolvePlaceholder(
 		return value.format(formatStr ?? "YYYY-MM-DD HH:mm:ss");
 	}
 
-	return String(value);
+	return value.toString();
 }
 
 function isDateFormat(
@@ -87,8 +86,11 @@ function executeExpression(
 			...keys,
 			`return ${expression};`,
 		);
-		const evalResult = evaluator(moment, ...keys.map((k) => variables[k]));
-		return String(evalResult ?? "");
+		const evalResult = evaluator(
+			moment,
+			...keys.map((k) => variables[k]),
+		) as string;
+		return evalResult ?? "";
 	} catch (ex) {
 		console.error(
 			`[Note type] Failed to execute expression: ${expression}`,

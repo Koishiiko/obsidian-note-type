@@ -1,7 +1,7 @@
 import {
 	CachedMetadata,
-	MarkdownView,
 	normalizePath,
+	Notice,
 	stringifyYaml,
 	TFile,
 } from "obsidian";
@@ -31,10 +31,12 @@ export class NoteTypeManager {
 
 		const noteCache = this.plugin.app.metadataCache.getFileCache(note);
 		const noteFrontmatter = noteCache?.frontmatter as
-			| Record<string, any>
+			| Record<string, unknown>
 			| undefined;
 
-		const oldKey = noteFrontmatter?.[this.plugin.settings.propertyKey];
+		const oldKey = noteFrontmatter?.[
+			this.plugin.settings.propertyKey
+		] as string;
 		if (oldKey === key) {
 			return;
 		}
@@ -92,8 +94,8 @@ export class NoteTypeManager {
 			}
 
 			// XXX
-			requestAnimationFrame(() => {
-				requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
+				window.requestAnimationFrame(() => {
 					editor.editor!.scrollTo(0, 0);
 				});
 			});
@@ -117,7 +119,7 @@ export class NoteTypeManager {
 
 		const formatter = this.plugin.getFormatter(noteType.formatter);
 
-		return await formatter!.formatTemplate(note, template, {});
+		return await formatter.formatTemplate(note, template, {});
 	}
 
 	private async hasExistingContent(
@@ -125,7 +127,7 @@ export class NoteTypeManager {
 		noteCache: CachedMetadata | null,
 	): Promise<boolean> {
 		const noteFrontmatter = noteCache?.frontmatter as
-			| Record<string, any>
+			| Record<string, unknown>
 			| undefined;
 		const haveFrontmatter =
 			noteFrontmatter != null &&
@@ -146,7 +148,7 @@ export class NoteTypeManager {
 		note: TFile,
 		key: string,
 		noteCache: CachedMetadata | null,
-		noteFrontmatter: Record<string, any> | undefined,
+		noteFrontmatter: Record<string, unknown> | undefined,
 		overwriteType: OverwriteTypeData,
 	): Promise<void> {
 		const noteType = this.plugin.settings.types.find((t) => t.key === key);
@@ -166,7 +168,7 @@ export class NoteTypeManager {
 			key,
 		);
 
-		this.plugin.app.vault.process(note, (noteContent) => {
+		await this.plugin.app.vault.process(note, (noteContent) => {
 			const haveFrontmatter =
 				noteFrontmatter != null &&
 				Object.keys(noteFrontmatter).some(
@@ -186,7 +188,7 @@ export class NoteTypeManager {
 	}
 
 	private mergeFrontmatter(
-		noteFrontmatter: Record<string, any> | undefined,
+		noteFrontmatter: Record<string, unknown> | undefined,
 		templateFrontmatter: Record<string, unknown> | undefined,
 		mode: PropertyOverwriteType,
 		noteTypeKey: string,

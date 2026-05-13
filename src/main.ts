@@ -25,7 +25,7 @@ export default class NoteTypePlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-		this.saveSettings = debounce(this._saveSettings, 300);
+		this.saveSettings = debounce(this._saveSettings.bind(this), 300);
 		this.formatters = initFormatters(this);
 
 		this.manager = new NoteTypeManager(this);
@@ -38,12 +38,10 @@ export default class NoteTypePlugin extends Plugin {
 			this.registerEvent(
 				this.app.workspace.on(
 					"file-open",
-					this.addNoteTypeProperty.bind(this),
+					(file) => void this.addNoteTypeProperty(file),
 				),
 			);
 		});
-
-		console.log("Note Type plugin version:", this.manifest.version);
 	}
 
 	onunload() {
@@ -60,7 +58,9 @@ export default class NoteTypePlugin extends Plugin {
 		}
 
 		// XXX: waiting other plugin processed when the file is created
-		await new Promise<void>((reslove) => setTimeout(() => reslove(), 100));
+		await new Promise<void>((reslove) =>
+			window.setTimeout(() => reslove(), 100),
+		);
 
 		const cache = this.app.metadataCache.getFileCache(file);
 		if (cache?.frontmatter?.[this.settings.propertyKey] != null) {
@@ -124,7 +124,7 @@ export default class NoteTypePlugin extends Plugin {
 
 		if (styles.length > 0) {
 			if (!this.styleEl) {
-				this.styleEl = document.head.createEl("style");
+				this.styleEl = activeDocument.head.createEl("style");
 			}
 			this.styleEl.textContent = styles.join("\n");
 		} else {

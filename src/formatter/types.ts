@@ -21,7 +21,8 @@ export abstract class Formatter {
 export type FormatVariable = unknown;
 
 export interface FormatOptions {
-	// TODO
+	// Reserve for future options
+	__placeholder?: never;
 }
 
 export interface FormatData {

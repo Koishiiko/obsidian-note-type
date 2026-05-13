@@ -14,7 +14,7 @@ export function splitFrontmatter(text: string) {
 	}
 
 	const frontmatterRaw = text.substring(splitterLength, endIndex).trim();
-	const frontmatter = parseYaml(frontmatterRaw) as Record<string, any>;
+	const frontmatter = parseYaml(frontmatterRaw) as Record<string, unknown>;
 	const content = text.substring(endIndex + splitterLength).trimStart();
 
 	return { frontmatter, content };

@@ -49,7 +49,7 @@ export function patchMetadataEditor(plugin: NoteTypePlugin) {
 export function reloadMetadataEditor(plugin: NoteTypePlugin) {
 	plugin.app.workspace.iterateAllLeaves((leaf) => {
 		if ("metadataEditor" in leaf.view) {
-			leaf.rebuildView();
+			void leaf.rebuildView();
 		}
 	});
 }
@@ -100,19 +100,21 @@ function initNoteTypeSelector(
 ) {
 	const dropdown = new IconDropdown(editor.noteTypeSelectorContainer!);
 
-	dropdown.onChange(async (key) => {
-		const oldType = (editor.properties.find(
-			(p) => p.key === plugin.settings.propertyKey,
-		)?.value ?? NO_TYPE_KEY) as string;
+	dropdown.onChange((key) => {
+		void (async () => {
+			const oldType = (editor.properties.find(
+				(p) => p.key === plugin.settings.propertyKey,
+			)?.value ?? NO_TYPE_KEY) as string;
 
-		if (oldType === key) {
-			return;
-		}
+			if (oldType === key) {
+				return;
+			}
 
-		const canceled = await plugin.manager.onNoteTypeChange(key);
-		if (canceled) {
-			dropdown.setValue(oldType);
-		}
+			const canceled = await plugin.manager.onNoteTypeChange(key);
+			if (canceled) {
+				dropdown.setValue(oldType);
+			}
+		})();
 	});
 
 	const options = [
@@ -125,7 +127,7 @@ function initNoteTypeSelector(
 	return dropdown;
 }
 
-function addClass(plugin: NoteTypePlugin, editor: PatchedMetadataEditor) {
+function addClass(_plugin: NoteTypePlugin, editor: PatchedMetadataEditor) {
 	editor.containerEl.addClass("note-type-metadata-container");
 }
 
@@ -147,5 +149,5 @@ function updateSelector(
 		value = NO_TYPE_KEY;
 	}
 
-	editor.noteTypeDropdown.setValue(value as string);
+	editor.noteTypeDropdown.setValue(value);
 }
