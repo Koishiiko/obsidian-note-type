@@ -156,35 +156,10 @@ export class NoteTypeManager {
 		try {
 			templateData = await this.formatTemplate(note, noteType);
 		} catch (e) {
-			new Notice(`Failed to format template: ${e}`);
+			new Notice(`Failed to format template: ${e as Error}`);
 			console.error(e);
 			return;
 		}
-
-		const frontmatter = this.mergeFrontmatter(
-			noteFrontmatter,
-			templateData.frontmatter,
-			overwriteType.frontmatter,
-			key,
-		);
-
-		await this.plugin.app.vault.process(note, (noteContent) => {
-			const haveFrontmatter =
-				noteFrontmatter != null &&
-				Object.keys(noteFrontmatter).some(
-					(k) => k !== this.plugin.settings.propertyKey,
-				);
-
-			const content = this.mergeContent(
-				noteContent,
-				noteCache,
-				haveFrontmatter,
-				templateData.content,
-				overwriteType.content,
-			);
-
-			return `---\n${stringifyYaml(frontmatter)}---\n${content}`;
-		});
 	}
 
 	private mergeFrontmatter(

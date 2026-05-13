@@ -1,4 +1,4 @@
-import { Modal, Setting, SettingGroup,  } from "obsidian";
+import { Modal, Setting, SettingGroup } from "obsidian";
 import { NoteTypeData } from "../settings";
 import NoteTypePlugin from "../main";
 import { FileSuggester } from "./fileSuggester";
@@ -76,9 +76,8 @@ export class NoteTypeModal extends Modal {
 		data = data!;
 		const group = new SettingGroup(this.contentEl);
 
-		group.addSetting((s) =>
-			s
-				.setName("Key")
+		group.addSetting((s) => {
+			s.setName("Key")
 				.setDesc(
 					"Unique identifier for this note type, it will be set to the property key.",
 				)
@@ -86,23 +85,21 @@ export class NoteTypeModal extends Modal {
 					t
 						.setValue(data.key)
 						.onChange((value) => (data.key = value)),
-				),
-		);
+				);
+		});
 
-		group.addSetting((s) =>
-			s
-				.setName("Name")
+		void group.addSetting((s) => {
+			s.setName("Name")
 				.setDesc("Display name of the note type.")
 				.addText((t) =>
 					t
 						.setValue(data.name)
 						.onChange((value) => (data.name = value)),
-				),
-		);
+				);
+		});
 
-		group.addSetting((s) =>
-			s
-				.setName("Icon")
+		void group.addSetting((s) => {
+			s.setName("Icon")
 				.setDesc(
 					createFragment((f) => {
 						f.createSpan({ text: "See: " });
@@ -116,23 +113,21 @@ export class NoteTypeModal extends Modal {
 					t
 						.setValue(data.icon ?? "")
 						.onChange((value) => (data.icon = value)),
-				),
-		);
+				);
+		});
 
-		group.addSetting((s) =>
-			s
-				.setName("Color")
+		void group.addSetting((s) => {
+			s.setName("Color")
 				.setDesc("Color of the icon and name")
 				.addColorPicker((p) =>
 					p
 						.setValue(data.color ?? "")
 						.onChange((value) => (data.color = value)),
-				),
-		);
+				);
+		});
 
-		group.addSetting((s) =>
-			s
-				.setName("Template")
+		void group.addSetting((s) => {
+			s.setName("Template")
 				.setDesc(
 					"Template file to use when filling a note of this type.",
 				)
@@ -141,12 +136,11 @@ export class NoteTypeModal extends Modal {
 						(value) => (data.template = value),
 					);
 					new FileSuggester(this.app, t.inputEl, { type: "files" });
-				}),
-		);
+				});
+		});
 
-		group.addSetting((s) =>
-			s
-				.setName("Formatter")
+		void group.addSetting((s) => {
+			s.setName("Formatter")
 				.setDesc("Template formatter.")
 				.addDropdown((d) => {
 					d.addOptions(
@@ -160,7 +154,7 @@ export class NoteTypeModal extends Modal {
 					)
 						.setValue(data.formatter ?? DEFAULT_FORMATTER_KEY)
 						.onChange((value) => (data.formatter = value));
-				}),
-		);
+				});
+		});
 	}
 }

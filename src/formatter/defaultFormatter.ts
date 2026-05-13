@@ -44,10 +44,6 @@ function resolvePlaceholder(
 ): string {
 	const expression = rawExpression.trim();
 
-	if (!isDateFormat(expression, variables)) {
-		return executeExpression(expression, variables);
-	}
-
 	const [key, formatStr] = splitFormat(expression);
 	const value = variables[key.toLowerCase()];
 
@@ -60,44 +56,6 @@ function resolvePlaceholder(
 	}
 
 	return value.toString();
-}
-
-function isDateFormat(
-	expression: string,
-	variables: Record<string, FormatVariable>,
-) {
-	const colonIndex = expression.indexOf(":");
-	if (colonIndex === -1) {
-		return false;
-	}
-
-	const left = expression.split(":")[0]?.toLocaleLowerCase();
-	return left != null && moment.isMoment(variables[left]);
-}
-
-function executeExpression(
-	expression: string,
-	variables: Record<string, FormatVariable>,
-) {
-	try {
-		const keys = Object.keys(variables);
-		const evaluator = new Function(
-			"moment",
-			...keys,
-			`return ${expression};`,
-		);
-		const evalResult = evaluator(
-			moment,
-			...keys.map((k) => variables[k]),
-		) as string;
-		return evalResult ?? "";
-	} catch (ex) {
-		console.error(
-			`[Note type] Failed to execute expression: ${expression}`,
-			ex,
-		);
-		return `{{${expression} - ${ex}}}`;
-	}
 }
 
 function splitFormat(expression: string) {
@@ -114,7 +72,11 @@ function splitFormat(expression: string) {
 
 function defaultVariables(note?: TFile | null): Record<string, FormatVariable> {
 	return {
-		note,
+		name: note?.basename,
+		fullname: note?.name,
+		ext: note?.extension,
+		ctime: note == null ? null : moment(note.stat.ctime),
+		mtime: note == null ? null : moment(note.stat.mtime),
 		now: moment(),
 		date: moment(),
 	};
