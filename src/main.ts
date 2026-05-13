@@ -100,36 +100,11 @@ export default class NoteTypePlugin extends Plugin {
 			DEFAULT_SETTINGS,
 			(await this.loadData()) as Partial<NoteTypePluginSettings>,
 		);
-		this.updateStyle();
 	}
 
 	async _saveSettings() {
 		await this.saveData(this.settings);
 
-		this.updateStyle();
 		reloadMetadataEditor(this);
-	}
-
-	updateStyle() {
-		const styles: string[] = [];
-
-		if (this.settings.hideProperty) {
-			const escapedKey = CSS.escape(
-				this.settings.propertyKey,
-			).toLowerCase();
-			styles.push(
-				`.metadata-property[data-property-key="${escapedKey}"] { display: none; }`,
-			);
-		}
-
-		if (styles.length > 0) {
-			if (!this.styleEl) {
-				this.styleEl = activeDocument.head.createEl("style");
-			}
-			this.styleEl.textContent = styles.join("\n");
-		} else {
-			this.styleEl?.remove();
-			this.styleEl = undefined;
-		}
 	}
 }

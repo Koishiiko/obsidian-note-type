@@ -238,26 +238,27 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 		const types = this.plugin.settings.types;
 
 		if (types.length === 0) {
-			group.addSetting((s) => s.setName("No items yet."));
+			group.addSetting((s) => {
+				s.setName("No items yet.");
+			});
 			return;
 		}
 
 		for (let index = 0; index < types.length; index++) {
 			const item = types[index]!;
 
-			group.addSetting((s) =>
-				s
-					.setName(
-						createFragment((f) => {
-							const containerEl = f.createDiv({
-								cls: "setting-note-type-name-label",
-							});
-							containerEl.style.color = item.color ?? "";
-							const iconEl = containerEl.createSpan();
-							setIcon(iconEl, item.icon ?? DEFAULT_ICON);
-							containerEl.createSpan({ text: item.name });
-						}),
-					)
+			group.addSetting((s) => {
+				s.setName(
+					createFragment((f) => {
+						const containerEl = f.createDiv({
+							cls: "setting-note-type-name-label",
+						});
+						containerEl.style.color = item.color ?? "";
+						const iconEl = containerEl.createSpan();
+						setIcon(iconEl, item.icon ?? DEFAULT_ICON);
+						containerEl.createSpan({ text: item.name });
+					}),
+				)
 					.addButton((btn) =>
 						btn
 							.setIcon("arrow-up")
@@ -334,8 +335,8 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 								item.disabled = !value;
 								void this.plugin.saveSettings();
 							}),
-					),
-			);
+					);
+			});
 		}
 	}
 

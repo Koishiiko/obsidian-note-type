@@ -1,5 +1,6 @@
 # Obsidian Note Type
 
+![sample](./assets/sample.gif)
 
 ## Features
 

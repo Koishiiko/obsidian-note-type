@@ -4,6 +4,10 @@
 	display: block;
 }
 
+.metadata-property.note-type-property {
+	display: none;
+}
+
 .setting-note-type-name-label {
 	display: flex;
 	justify-items: center;

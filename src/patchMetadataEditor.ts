@@ -28,6 +28,7 @@ export function patchMetadataEditor(plugin: NoteTypePlugin) {
 				// @ts-expect-error
 				const that = this as PatchedMetadataEditor;
 				old.call(that, data);
+				hideNoteTypeProperty(plugin, that);
 				updateSelector(plugin, that, data);
 			});
 		},
@@ -150,4 +151,21 @@ function updateSelector(
 	}
 
 	editor.noteTypeDropdown.setValue(value);
+}
+
+function hideNoteTypeProperty(
+	plugin: NoteTypePlugin,
+	editor: PatchedMetadataEditor,
+) {
+	if (!plugin.settings.hideProperty) {
+		return;
+	}
+	const escapedKey = CSS.escape(plugin.settings.propertyKey).toLowerCase();
+	const noteTypeEl = editor.propertyListEl.querySelector(
+		`.metadata-property[data-property-key="${escapedKey}"]`,
+	);
+
+	if (noteTypeEl != null) {
+		noteTypeEl.addClass("note-type-property");
+	}
 }
