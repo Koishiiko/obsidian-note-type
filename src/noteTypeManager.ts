@@ -7,14 +7,13 @@ import {
 } from "obsidian";
 import NoteTypePlugin from "./main";
 import { NoteTypeData } from "./settings";
-import { DEFAULT_FORMATTER_KEY, FormatData } from "./formatter";
+import { FormatData } from "./formatter";
 import {
 	ContentOverwriteType,
 	OverwriteTypeData,
 	PropertyOverwriteType,
 	showOverwriteConfirmModal,
 } from "./components/overwriteConfirmModal";
-import { DefaultFormatter } from "formatter/defaultFormatter";
 
 export class NoteTypeManager {
 	constructor(private plugin: NoteTypePlugin) {}

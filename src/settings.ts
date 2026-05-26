@@ -30,6 +30,8 @@ export interface NoteTypePluginSettings {
 	enableDefaultNoteType: boolean;
 	emptyNoteOnly: boolean;
 	defaultNoteType: string;
+	defaultNoteTypeIncludeFolders?: string[];
+	defaultNoteTypeExcludeFolders?: string[];
 }
 
 export interface NoteTypeData {
@@ -212,6 +214,51 @@ export class NoteTypeSettingTab extends PluginSettingTab {
 						)
 						.onChange((value) => {
 							this.plugin.settings.defaultNoteType = value;
+							void this.plugin.saveSettings();
+						});
+				});
+		});
+
+		group.addSetting((s) => {
+			s.setName("Inlcude folders")
+				.setDesc(
+					"Only trigger notes in specify folders, split by comma.",
+				)
+				.addTextArea((t) => {
+					t.setPlaceholder("diary,notes")
+						.setValue(
+							this.plugin.settings.defaultNoteTypeIncludeFolders
+								? this.plugin.settings.defaultNoteTypeIncludeFolders.join(
+										",",
+									)
+								: "",
+						)
+						.onChange((value) => {
+							this.plugin.settings.defaultNoteTypeIncludeFolders =
+								value.split(",").map((i) => i.trim());
+							void this.plugin.saveSettings();
+						});
+				});
+		});
+
+		group.addSetting((s) => {
+			s.setName("Exclude folders")
+				.setDesc(
+					"Do not trigger notes in specify folders, split by comma.",
+				)
+				.addTextArea((t) => {
+					t.setPlaceholder("assets,attachments")
+						.setValue(
+							this.plugin.settings.defaultNoteTypeExcludeFolders
+								? this.plugin.settings.defaultNoteTypeExcludeFolders.join(
+										",",
+									)
+								: "",
+						)
+						.onChange((value) => {
+							this.plugin.settings.defaultNoteTypeExcludeFolders =
+								value.split(",").map((i) => i.trim());
+							void this.plugin.saveSettings();
 						});
 				});
 		});

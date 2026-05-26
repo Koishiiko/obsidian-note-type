@@ -50,25 +50,20 @@ export default class NoteTypePlugin extends Plugin {
 	}
 
 	async addNoteTypeProperty(file: TFile | null) {
-		if (!this.settings.enableDefaultNoteType) {
+		if (!this.shouldAddNoteTypeProperty(file)) {
 			return;
 		}
-
-		if (file == null || file.extension !== "md") {
-			return;
-		}
-
 		// XXX: waiting other plugin processed when the file is created
 		await new Promise<void>((reslove) =>
 			window.setTimeout(() => reslove(), 100),
 		);
 
-		const cache = this.app.metadataCache.getFileCache(file);
+		const cache = this.app.metadataCache.getFileCache(file!);
 		if (cache?.frontmatter?.[this.settings.propertyKey] != null) {
 			return;
 		}
 
-		if (this.settings.emptyNoteOnly && file.stat.size > 0) {
+		if (this.settings.emptyNoteOnly && file!.stat.size > 0) {
 			return;
 		}
 
@@ -76,6 +71,36 @@ export default class NoteTypePlugin extends Plugin {
 			this.app.workspace.activeEditor!.metadataEditor!,
 			this.settings.defaultNoteType,
 		);
+	}
+
+	private shouldAddNoteTypeProperty(file: TFile | null) {
+		if (!this.settings.enableDefaultNoteType) {
+			return false;
+		}
+
+		if (file == null || file.extension !== "md") {
+			return false;
+		}
+
+		if (this.settings.defaultNoteTypeExcludeFolders?.length) {
+			const exclude = this.settings.defaultNoteTypeExcludeFolders.some(
+				(f) => file.path.startsWith(f),
+			);
+			if (exclude) {
+				return false;
+			}
+		}
+
+		if (this.settings.defaultNoteTypeIncludeFolders?.length) {
+			const include = this.settings.defaultNoteTypeIncludeFolders.some(
+				(f) => file.path.startsWith(f),
+			);
+			if (!include) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	getFormatter(key?: string) {
