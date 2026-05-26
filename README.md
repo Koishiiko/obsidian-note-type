@@ -34,14 +34,15 @@ The plugin does not introduce new note syntax, just binds a configurable propert
 
 Define your note types here. Each note type has the following options:
 
-| Field         | Description                                                                |
-| ------------- | -------------------------------------------------------------------------- |
-| **Key**       | Unique identifier written to the configured property key.                  |
-| **Name**      | Display name shown in the dropdown.                                        |
-| **Icon**      | Icon from [Lucide](https://lucide.dev/icons) displayed alongside the name. |
-| **Color**     | Color applied to the icon and name in the dropdown.                        |
-| **Template**  | Path to the template file used when this note type is selected.            |
-| **Formatter** | The engine used to process the template (see below).                       |
+| Field         | Description                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| **Key**       | Unique identifier written to the configured property key.                                       |
+| **Name**      | Display name shown in the dropdown.                                                             |
+| **Icon**      | Icon from [Lucide](https://lucide.dev/icons) displayed alongside the name.                      |
+| **Color**     | Color applied to the icon and name in the dropdown.                                             |
+| **Folder**    | If not empty, current note will be moved to the specify folder, support built-in format syntax. |
+| **Template**  | Path to the template file used when this note type is selected.                                 |
+| **Formatter** | The engine used to process the template (see below).                                            |
 
 #### Formatters
 
@@ -69,6 +70,10 @@ Uses `{{ variable }}` or `{{ date:format }}` syntax with variable. The following
 ##### Templater
 
 More complex templates can be implemented using the **Templater** plugin, see: [Templater document](https://silentvoid13.github.io/Templater)
+
+#### Type folder
+
+You can using the Built-in syntax to format the target folder path, or keeping it empty and using Templater (see: [this](https://forum.obsidian.md/t/templater-rename-a-file-and-move-it-to-a-folder/39287))
 
 ### Overwrite Behavior
 

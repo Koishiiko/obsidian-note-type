@@ -7,13 +7,14 @@ import {
 } from "obsidian";
 import NoteTypePlugin from "./main";
 import { NoteTypeData } from "./settings";
-import { FormatData } from "./formatter";
+import { DEFAULT_FORMATTER_KEY, FormatData } from "./formatter";
 import {
 	ContentOverwriteType,
 	OverwriteTypeData,
 	PropertyOverwriteType,
 	showOverwriteConfirmModal,
 } from "./components/overwriteConfirmModal";
+import { DefaultFormatter } from "formatter/defaultFormatter";
 
 export class NoteTypeManager {
 	constructor(private plugin: NoteTypePlugin) {}
@@ -45,6 +46,7 @@ export class NoteTypeManager {
 			frontmatter: this.plugin.settings.defaultPropertyOverwriteType,
 			content: this.plugin.settings.defaultContentOverwriteType,
 		};
+
 		if (await this.hasExistingContent(note, noteCache)) {
 			if (this.plugin.settings.showConfictModal) {
 				overwriteType = await showOverwriteConfirmModal(
@@ -152,6 +154,11 @@ export class NoteTypeManager {
 		overwriteType: OverwriteTypeData,
 	): Promise<void> {
 		const noteType = this.plugin.settings.types.find((t) => t.key === key);
+
+		if (noteType?.folder != null && noteType.folder.trim() !== "") {
+			await this.moveNote(note, noteType);
+		}
+
 		let templateData;
 		try {
 			templateData = await this.formatTemplate(note, noteType);
@@ -185,6 +192,42 @@ export class NoteTypeManager {
 
 			return `---\n${stringifyYaml(frontmatter)}---\n${content}`;
 		});
+	}
+
+	private async moveNote(note: TFile, noteType: NoteTypeData) {
+		const formatter = this.plugin.defaultFormatter();
+		let targetFolder = formatter.formatString(
+			note,
+			noteType.folder!,
+			{},
+		).content;
+		targetFolder = normalizePath(targetFolder);
+
+		if (!this.plugin.app.vault.getFolderByPath(targetFolder)) {
+			try {
+				await this.plugin.app.vault.createFolder(targetFolder);
+			} catch (e) {
+				new Notice(
+					`Failed to create folder: ${targetFolder}, ${e as Error}`,
+				);
+				return;
+			}
+		}
+
+		let targetPath = `${targetFolder}/${note.name}`;
+		if (targetPath === note.path) {
+			return;
+		}
+
+		targetPath = this.plugin.app.vault.getAvailablePath(targetPath, "");
+
+		try {
+			await this.plugin.app.fileManager.renameFile(note, targetPath);
+			new Notice(`Moved file to ${targetPath}`);
+		} catch (e) {
+			new Notice(`Failed move file to: ${targetPath}, ${e as Error}`);
+			return;
+		}
 	}
 
 	private mergeFrontmatter(

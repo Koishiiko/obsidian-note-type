@@ -127,6 +127,29 @@ export class NoteTypeModal extends Modal {
 		});
 
 		void group.addSetting((s) => {
+			s.setName("Folder")
+				.setDesc(
+					createFragment((f) => {
+						f.createSpan({
+							text: "If not empty, move current note to the target folder, support ",
+						});
+						f.createEl("a", {
+							text: "built-in syntax",
+							href: "https://github.com/Koishiiko/obsidian-note-type#default-built-in",
+						});
+						f.createSpan({
+							text: ". You can use Templater for implements more complex logic.",
+						});
+					}),
+				)
+				.addText((t) => {
+					t.setValue(data.folder ?? "").onChange(
+						(value) => (data.folder = value),
+					);
+				});
+		});
+
+		void group.addSetting((s) => {
 			s.setName("Template")
 				.setDesc(
 					"Template file to use when filling a note of this type.",

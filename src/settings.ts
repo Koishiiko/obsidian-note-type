@@ -37,6 +37,7 @@ export interface NoteTypeData {
 	name: string;
 	icon?: string;
 	color?: string;
+	folder?: string;
 	template?: string;
 	formatter?: string;
 	disabled?: boolean;

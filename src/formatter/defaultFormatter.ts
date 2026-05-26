@@ -16,11 +16,15 @@ export class DefaultFormatter extends Formatter {
 	async formatTemplate(
 		note: TFile,
 		template: TFile,
-		_options: FormatOptions,
+		options: FormatOptions,
 	): Promise<FormatData> {
 		const templateContent =
 			await this.plugin.app.vault.cachedRead(template);
-		const formatted = format(templateContent, defaultVariables(note));
+		return this.formatString(note, templateContent, options);
+	}
+
+	formatString(note: TFile, content: string, _options: FormatOptions) {
+		const formatted = format(content, defaultVariables(note));
 		return splitFrontmatter(formatted);
 	}
 }

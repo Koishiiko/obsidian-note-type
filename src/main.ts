@@ -11,6 +11,7 @@ import {
 } from "./patchMetadataEditor";
 import { DEFAULT_FORMATTER_KEY, Formatter, initFormatters } from "./formatter";
 import { NoteTypeManager } from "./noteTypeManager";
+import { DefaultFormatter } from "formatter/defaultFormatter";
 
 export default class NoteTypePlugin extends Plugin {
 	settings!: NoteTypePluginSettings;
@@ -83,6 +84,10 @@ export default class NoteTypePlugin extends Plugin {
 			this.formatters.find((f) => f.key === key) ??
 			this.formatters.find((f) => f.key === DEFAULT_FORMATTER_KEY)!
 		);
+	}
+
+	defaultFormatter() {
+		return this.getFormatter() as DefaultFormatter;
 	}
 
 	registerFormatter(formatter: Formatter): void {
